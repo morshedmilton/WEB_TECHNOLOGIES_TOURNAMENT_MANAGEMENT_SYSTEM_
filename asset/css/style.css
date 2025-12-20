@@ -1,0 +1,68 @@
+/* main font and margin setup */
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f4f4f4;
+}
+
+/* fieldset and legend styling */
+fieldset {
+    border: 2px solid #000;
+    padding: 20px;
+    width: 400px;
+    background-color: #ffffff;
+    border-radius: 5px;
+}
+
+legend {
+    font-weight: bold;
+    font-size: 1.2em;
+    padding: 0 10px;
+}
+
+/* input field and button common style */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+textarea {
+    width: 90%;
+    padding: 8px;
+    margin: 10px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+input[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+input[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+/* error message styling that we will use in JS */
+#jsError,
+.error {
+    color: red;
+    font-size: 14px;
+}
+
+/* navigation link basic style */
+a {
+    text-decoration: none;
+    color: blue;
+    margin-left: 10px;
+}
+
+/* dark mode basic class (for future use) */
+.dark-mode {
+    background-color: #333;
+    color: white;
+}
