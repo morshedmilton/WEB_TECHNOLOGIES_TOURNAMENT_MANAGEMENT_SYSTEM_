@@ -3,6 +3,14 @@ body {
     font-family: Arial, sans-serif;
     margin: 20px;
     background-color: #f4f4f4;
+
+}
+
+form {
+    margin: 0 auto;
+    width: 400px;
+    padding: 20px;
+    border-radius: 5px;
 }
 
 /* fieldset and legend styling */
