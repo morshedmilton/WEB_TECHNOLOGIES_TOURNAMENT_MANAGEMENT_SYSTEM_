@@ -1,47 +1,50 @@
-/* main font and margin setup */
+/* প্রজেক্টের মেইন ফন্ট এবং ব্যাকগ্রাউন্ড সেটআপ */
 body {
     font-family: Arial, sans-serif;
-    margin: 20px;
+    margin: 0;
+    padding: 0;
     background-color: #f4f4f4;
-
 }
 
-form {
-    margin: 0 auto;
-    width: 400px;
-    padding: 20px;
-    border-radius: 5px;
-}
-
-/* fieldset and legend styling */
+/* ফর্মের বক্সটিকে (Fieldset) স্ক্রিনের মাঝখানে আনার জন্য */
 fieldset {
     border: 2px solid #000;
     padding: 20px;
-    width: 400px;
+    width: 420px;
     background-color: #ffffff;
     border-radius: 5px;
+    /* উপভে-নিচে ৮০ পিক্সেল এবং দুই পাশে auto দিয়ে মাঝখানে আনা হয়েছে */
+    margin: 80px auto;
 }
 
+/* "Registration [Guest]" লেখাটিকে লাইনের মাঝখানে আনার জন্য */
 legend {
     font-weight: bold;
     font-size: 1.2em;
-    padding: 0 10px;
+    padding: 0 15px;
+    /* লিজেন্ডকে মাঝখানে স্থাপনের স্ট্যান্ডার্ড পদ্ধতি */
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
 }
 
-/* input field and button common style */
+/* ইনপুট ফিল্ড এবং টেক্সটএরিয়ার সাধারণ স্টাইলিং */
 input[type="text"],
 input[type="password"],
 input[type="email"],
 input[type="number"],
 textarea {
-    width: 90%;
+    width: 95%;
     padding: 8px;
     margin: 10px 0;
     display: inline-block;
     border: 1px solid #ccc;
     border-radius: 4px;
+    box-sizing: border-box;
+    /* প্যাডিং যেন উইথ নষ্ট না করে */
 }
 
+/* সাবমিট বাটনের স্টাইলিং */
 input[type="submit"] {
     background-color: #4CAF50;
     color: white;
@@ -49,28 +52,33 @@ input[type="submit"] {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+    margin-top: 10px;
 }
 
 input[type="submit"]:hover {
     background-color: #45a049;
 }
 
-/* error message styling that we will use in JS */
-#jsError,
-.error {
+/* জাভাস্ক্রিপ্ট এরর মেসেজ প্রদর্শনের স্টাইল */
+#jsError {
     color: red;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+/* লগইন বা অন্যান্য পেজে যাওয়ার লিংকের স্টাইল */
+a {
+    text-decoration: none;
+    color: #0066cc;
+    display: block;
+    text-align: center;
+    margin-top: 15px;
     font-size: 14px;
 }
 
-/* navigation link basic style */
-a {
-    text-decoration: none;
-    color: blue;
-    margin-left: 10px;
-}
-
-/* dark mode basic class (for future use) */
-.dark-mode {
-    background-color: #333;
-    color: white;
+a:hover {
+    text-decoration: underline;
 }
