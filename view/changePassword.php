@@ -1,0 +1,43 @@
+<?php
+session_start();
+// Login check: if status cookie is not present, redirect to login page
+if (!isset($_COOKIE['status'])) {
+    header('location: login.php?error=badrequest');
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Change Password - Tournament Management System</title>
+    <link rel="stylesheet" href="../asset/css/style.css">
+</head>
+
+<body>
+
+    <form method="post" action="../controller/changePasswordCheck.php" enctype="multipart/form-data">
+        <fieldset>
+            <legend>Change Security Password</legend>
+
+            <div style="text-align: center; margin-bottom: 20px;">
+                <a href="profile.php" style="display: inline;">Back to Profile</a> |
+                <a href="home.php" style="display: inline;">Dashboard</a>
+            </div>
+
+            Current Password: <input type="password" name="currentPassword" id="currentPassword" value="" /> <br>
+            New Password: <input type="password" name="newPassword" id="newPassword" value="" /> <br>
+            Confirm New Password: <input type="password" name="confirmNewPassword" id="confirmNewPassword" value="" />
+            <br>
+
+            <input type="submit" name="submit" value="Change Password" />
+
+            <p id="jsError" style="color: red; text-align: center;"></p>
+        </fieldset>
+    </form>
+
+    <script src="../asset/js/validation.js"></script>
+</body>
+
+</html>

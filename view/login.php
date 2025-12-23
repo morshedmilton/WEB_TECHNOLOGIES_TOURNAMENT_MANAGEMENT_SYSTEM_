@@ -1,5 +1,5 @@
 <?php
-// সেশন থেকে এরর মেসেজ হ্যান্ডলিং
+// Error message handling from session
 if (isset($_GET['error'])) {
     $error = $_GET['error'];
     if ($error == "invalid_user") {

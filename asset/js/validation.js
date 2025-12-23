@@ -1,4 +1,4 @@
-// রেজিস্ট্রেশন ফর্ম ভ্যালিডেশন
+// Registration form validation
 function validateSignup() {
     let name = document.getElementById('name').value;
     let username = document.getElementById('username').value;
@@ -7,19 +7,19 @@ function validateSignup() {
     let confirmPassword = document.getElementById('confirmPassword').value;
     let errorMsg = document.getElementById('jsError');
 
-    // খালি ফিল্ড চেক করা
+    // Checking for empty fields
     if (name == "" || username == "" || email == "" || password == "" || confirmPassword == "") {
         errorMsg.innerHTML = "All fields are required!";
         return false;
     }
 
-    // পাসওয়ার্ডের দৈর্ঘ্য চেক (PRD অনুযায়ী ৮ অক্ষর)
+    // Password length check (8 characters as per PRD)
     if (password.length < 8) {
         errorMsg.innerHTML = "Password must be at least 8 characters long!";
         return false;
     }
 
-    // পাসওয়ার্ড ম্যাচিং চেক
+    // Password matching check
     if (password !== confirmPassword) {
         errorMsg.innerHTML = "Passwords do not match!";
         return false;
@@ -29,7 +29,7 @@ function validateSignup() {
     return true;
 }
 
-// লগইন ফর্ম ভ্যালিডেশন
+// Login form validation
 function validateLogin() {
     let username = document.getElementById('username').value;
     let password = document.getElementById('password').value;

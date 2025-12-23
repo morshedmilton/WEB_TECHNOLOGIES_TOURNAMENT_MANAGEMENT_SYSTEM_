@@ -1,4 +1,4 @@
-/* প্রজেক্টের মেইন ফন্ট এবং ব্যাকগ্রাউন্ড সেটআপ */
+/* Project's main font and background setup */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -6,29 +6,29 @@ body {
     background-color: #f4f4f4;
 }
 
-/* ফর্মের বক্সটিকে (Fieldset) স্ক্রিনের মাঝখানে আনার জন্য */
+/* To center the form box (Fieldset) on the screen */
 fieldset {
     border: 2px solid #000;
     padding: 20px;
     width: 420px;
     background-color: #ffffff;
     border-radius: 5px;
-    /* উপভে-নিচে ৮০ পিক্সেল এবং দুই পাশে auto দিয়ে মাঝখানে আনা হয়েছে */
+    /* Centered using 80px top-bottom and auto on both sides */
     margin: 80px auto;
 }
 
-/* "Registration [Guest]" লেখাটিকে লাইনের মাঝখানে আনার জন্য */
+/* To center the "Registration [Guest]" text in the line */
 legend {
     font-weight: bold;
     font-size: 1.2em;
     padding: 0 15px;
-    /* লিজেন্ডকে মাঝখানে স্থাপনের স্ট্যান্ডার্ড পদ্ধতি */
+    /* Standard method to center the legend */
     margin-left: auto;
     margin-right: auto;
     text-align: center;
 }
 
-/* ইনপুট ফিল্ড এবং টেক্সটএরিয়ার সাধারণ স্টাইলিং */
+/* General styling for input fields and textareas */
 input[type="text"],
 input[type="password"],
 input[type="email"],
@@ -41,10 +41,10 @@ textarea {
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
-    /* প্যাডিং যেন উইথ নষ্ট না করে */
+    /* Padding should not mess up the width */
 }
 
-/* সাবমিট বাটনের স্টাইলিং */
+/* Submit button styling */
 input[type="submit"] {
     background-color: #4CAF50;
     color: white;
@@ -61,7 +61,7 @@ input[type="submit"]:hover {
     background-color: #45a049;
 }
 
-/* জাভাস্ক্রিপ্ট এরর মেসেজ প্রদর্শনের স্টাইল */
+/* Style for displaying JavaScript error messages */
 #jsError {
     color: red;
     font-size: 14px;
@@ -69,7 +69,7 @@ input[type="submit"]:hover {
     margin-bottom: 10px;
 }
 
-/* লগইন বা অন্যান্য পেজে যাওয়ার লিংকের স্টাইল */
+/* Style for links to login or other pages */
 a {
     text-decoration: none;
     color: #0066cc;
