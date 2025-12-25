@@ -1,79 +1,107 @@
 <?php
 session_start();
-// Login and cookie check
+require_once('../model/tournamentModel.php');
+require_once('../model/teamModel.php');
+require_once('../model/matchModel.php');
+require_once('../model/commentModel.php');
+
 if (!isset($_COOKIE['status'])) {
-    header('location: login.php?error=badrequest');
+    header('location: login.php');
+    exit();
 }
 
-// Collect ID from URL
 if (isset($_GET['id'])) {
-    $id = $_GET['id'];
+    $t_id = $_GET['id'];
+    $t = getTournamentById($t_id);
+    $myTeams = getTeamsByCreator($_SESSION['username']);
+    $registeredTeams = getRegisteredTeams($t_id);
+    $matches = getMatchesByTournament($t_id);
+    $comments = getCommentsByTournament($t_id);
 }
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8">
-    <title>Tournament Details - Tournament Management System</title>
+    <title>Tournament Details</title>
     <link rel="stylesheet" href="../asset/css/style.css">
 </head>
 
 <body>
-
-    <fieldset style="width: 650px; margin: 50px auto;">
-        <legend>Tournament Full Details</legend>
-
-        <div style="text-align: center; margin-bottom: 20px;">
-            <a href="tournamentList.php" style="display: inline;">Back to List</a> |
-            <a href="home.php" style="display: inline;">Dashboard</a>
-        </div>
-
-        <div style="padding: 10px;">
-            <h2 style="text-align: center; color: #333;">Winter Cricket Cup 2024</h2>
-            <hr>
-            <p><strong>Category:</strong> Cricket</p>
-            <p><strong>Organizer:</strong> admin</p>
-            <p><strong>Description:</strong> This is a knockout cricket tournament for the local clubs. All matches will
-                be held in the city stadium.</p>
-            <p><strong>Tags:</strong> <span style="color: blue;">#summer, #cricket, #2024</span></p>
-
-            <div style="text-align: center; margin: 20px 0;">
-                <p><strong>Tournament Banner:</strong></p>
-                <img src="../asset/upload/banner.jpg" alt="Tournament Banner"
-                    style="max-width: 100%; border: 1px solid #000;">
-            </div>
-        </div>
-
+    <fieldset style="width: 800px; margin: 30px auto;">
+        <legend>Tournament: <?php echo $t['title']; ?></legend>
+        <div style="text-align: center;"><a href="tournamentList.php">Back to List</a> | <a
+                href="home.php">Dashboard</a></div>
         <hr>
 
-        <div style="text-align: center; padding: 10px;">
-            <strong>User Rating:</strong>
-            <span style="color: orange; font-size: 20px;">⭐⭐⭐⭐☆</span> (4.5/5)
-        </div>
+        <h3>Match Schedule & Results</h3>
+        <table border="1" cellspacing="0" cellpadding="8" style="width: 100%; text-align: center;">
+            <tr style="background-color: #eee;">
+                <th>Date</th>
+                <th>Match</th>
+                <th>Status</th>
+                <th>Winner</th>
+                <th>Action</th>
+            </tr>
+            <?php foreach ($matches as $m): ?>
+                <tr>
+                    <td><?php echo date('M d, h:i A', strtotime($m['match_date'])); ?></td>
+                    <td><?php echo $m['team1_name']; ?> vs <?php echo $m['team2_name']; ?></td>
+                    <td><?php echo $m['status']; ?></td>
+                    <td style="font-weight: bold; color: green;">
+                        <?php echo $m['winner_name'] ? $m['winner_name'] : "TBD"; ?>
+                    </td>
+                    <td>
+                        <?php if ($_SESSION['role'] == 'Admin' || $_SESSION['role'] == 'Organizer'): ?>
+                            <a href="updateMatch.php?match_id=<?php echo $m['id']; ?>">Update</a>
+                        <?php else: ?> --- <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </table>
 
         <hr>
-
-        <div style="padding: 10px;">
-            <h3>Comments & Feedback</h3>
-
-            <div style="border-bottom: 1px solid #eee; padding: 10px 0; margin-bottom: 10px;">
-                <strong>User123:</strong> <span style="font-size: 14px;">"Can't wait for the match! Great
-                    initiative."</span> <br>
-                <small style="color: gray;">Posted on: 2024-05-20 10:30 AM</small>
-            </div>
-
-            <form method="post" action="../controller/commentController.php">
-                <textarea name="comment" id="comment" placeholder="Write a comment..." rows="3"
-                    style="width: 98%; padding: 5px; border-radius: 4px; border: 1px solid #ccc;"></textarea> <br>
-                <input type="submit" name="postComment" value="Post Comment"
-                    style="width: auto; padding: 8px 20px; margin-top: 10px;">
-            </form>
+        <h3>Ratings & Comments</h3>
+        <div style="text-align: center; margin-top: 10px;">
+            <?php
+            if (isset($_GET['error'])) {
+                if ($_GET['error'] == 'empty_comment')
+                    echo "<span style='color: red;'>Please write something before posting!</span>";
+                if ($_GET['error'] == 'db_error')
+                    echo "<span style='color: red;'>Database error. Try again!</span>";
+            }
+            if (isset($_GET['success'])) {
+                if ($_GET['success'] == 'commented')
+                    echo "<span style='color: green;'>Thank you for your feedback!</span>";
+            }
+            ?>
         </div>
+        <form method="post" action="../controller/commentController.php">
+            <input type="hidden" name="tournament_id" value="<?php echo $t_id; ?>">
+            Rating:
+            <select name="rating">
+                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                <option value="4">⭐⭐⭐⭐ (4)</option>
+                <option value="3">⭐⭐⭐ (3)</option>
+                <option value="2">⭐⭐ (2)</option>
+                <option value="1">⭐ (1)</option>
+            </select><br>
+            <textarea name="comment" placeholder="Write your feedback..." style="width: 95%; margin-top: 5px;"
+                rows="3"></textarea><br>
+            <input type="submit" name="postComment" value="Post Review" style="width: auto; padding: 5px 15px;">
+        </form>
 
+        <div style="margin-top: 20px;">
+            <?php foreach ($comments as $c): ?>
+                <div style="border-bottom: 1px solid #ccc; padding: 10px 0;">
+                    <strong><?php echo $c['username']; ?></strong> (Rating: <?php echo $c['rating']; ?>/5) <br>
+                    <?php echo $c['comment']; ?> <br>
+                    <small style="color: gray;"><?php echo $c['created_at']; ?></small>
+                </div>
+            <?php endforeach; ?>
+        </div>
     </fieldset>
-
 </body>
 
 </html>

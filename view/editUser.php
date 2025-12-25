@@ -1,56 +1,52 @@
 <?php
 session_start();
-// Login check
-if (!isset($_COOKIE['status'])) {
-    header('location: login.php?error=badrequest');
+require_once('../model/userModel.php');
+if (!isset($_COOKIE['status']) || $_SESSION['role'] !== 'Admin') {
+    header('location: home.php');
+    exit();
 }
 
 if (isset($_GET['id'])) {
-    $id = $_GET['id'];
-    // Later user's current info will be fetched from database
+    $user = getUserById($_GET['id']);
 }
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8">
-    <title>Edit User Role/Status - Admin</title>
+    <title>Edit User Role/Status</title>
     <link rel="stylesheet" href="../asset/css/style.css">
 </head>
 
 <body>
+    <form method="post" action="../controller/adminController.php">
+        <fieldset style="width: 400px; margin: 50px auto;">
+            <legend>Edit User: <?php echo $user['username']; ?></legend>
+            <div style="text-align: center;"><a href="allUser.php">Back to List</a></div>
+            <hr>
+            <input type="hidden" name="id" value="<?php echo $user['id']; ?>">
 
-    <form method="post" action="../controller/userController.php" enctype="multipart/form-data">
-        <fieldset>
-            <legend>Edit User (Role & Status)</legend>
-
-            <div style="text-align: center; margin-bottom: 20px;">
-                <a href="allUser.php" style="display: inline;">Back to User List</a> |
-                <a href="home.php" style="display: inline;">Dashboard</a>
-            </div>
-
-            <input type="hidden" name="id" value="<?php echo $id; ?>">
-
-            Username: <input type="text" name="username" value="alamin" readonly /> <br>
-            Email: <input type="email" name="email" value="alamin@aiub.edu" readonly /> <br>
+            Name: <strong><?php echo $user['name']; ?></strong><br><br>
 
             Role:
-            <select name="role"
-                style="width: 95%; padding: 8px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;">
-                <option value="User">User</option>
-                <option value="Admin">Admin</option>
-            </select> <br>
+            <select name="role" style="width: 100%;">
+                <option value="Admin" <?php if ($user['role'] == 'Admin')
+                    echo 'selected'; ?>>Admin</option>
+                <option value="Organizer" <?php if ($user['role'] == 'Organizer')
+                    echo 'selected'; ?>>Organizer</option>
+                <option value="Player" <?php if ($user['role'] == 'Player')
+                    echo 'selected'; ?>>Player</option>
+            </select><br><br>
 
             Status:
-            <select name="status"
-                style="width: 95%; padding: 8px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;">
-                <option value="Active">Active</option>
-                <option value="Blocked">Blocked</option>
-            </select> <br>
+            <select name="status" style="width: 100%;">
+                <option value="Active" <?php if ($user['status'] == 'Active')
+                    echo 'selected'; ?>>Active</option>
+                <option value="Blocked" <?php if ($user['status'] == 'Blocked')
+                    echo 'selected'; ?>>Blocked</option>
+            </select><br><br>
 
-            <input type="submit" name="updateUser" value="Save Changes" />
+            <input type="submit" name="update_user" value="Update User">
         </fieldset>
     </form>
 </body>
