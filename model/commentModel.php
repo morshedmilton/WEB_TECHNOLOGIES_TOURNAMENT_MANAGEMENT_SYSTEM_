@@ -23,3 +23,4 @@ function getCommentsByTournament($tournament_id)
     mysqli_close($con);
     return $comments;
 }
+?>

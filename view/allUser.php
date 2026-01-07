@@ -41,9 +41,7 @@ $users = getAllUsers();
                     <td><?= $u['email'] ?></td>
                     <td><?= $u['role'] ?></td>
                     <td><?= $u['status'] ?></td>
-                    <td>
-                        <a href="editUser.php?id=<?= $u['id'] ?>" style="display: inline;">Change Role/Status</a>
-                    </td>
+                    <td><a href="editUser.php?id=<?= $u['id'] ?>" style="display: inline;">Change Role/Status</a></td>
                 </tr>
             <?php } ?>
         </table>

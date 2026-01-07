@@ -13,7 +13,6 @@
             <legend>Forgot Password</legend>
             <p style="text-align: center; font-size: 13px;">Enter your email to receive a reset link.</p>
             Email: <input type="email" name="email" id="email" value="" /> <br>
-
             <input type="submit" name="submit" value="Send Reset Link" />
             <a href='login.php'>Back to Login</a>
         </fieldset>

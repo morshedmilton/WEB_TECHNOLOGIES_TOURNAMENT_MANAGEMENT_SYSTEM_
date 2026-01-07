@@ -1,11 +1,12 @@
 <?php
-// Error message handling from session
 if (isset($_GET['error'])) {
     $error = $_GET['error'];
-    if ($error == "invalid_user") {
+    if ($error == "invalid") {
         $err1 = "Invalid username or password!";
     } elseif ($error == "badrequest") {
         $err2 = "Please login first!";
+    } elseif ($error == "null") {
+        $err1 = "Please fill all fields!";
     }
 }
 ?>
@@ -24,18 +25,15 @@ if (isset($_GET['error'])) {
         onsubmit="return validateLogin()">
         <fieldset>
             <legend>Signin [User/Admin]</legend>
-            Username/Email: <input type="text" name="username" id="username" value="" /> <br>
-            Password: <input type="password" name="password" id="password" value="" /> <br>
-
+            Username/Email: <input type="text" name="username" id="username" value="" autocomplete="username" /> <br>
+            Password: <input type="password" name="password" id="password" value="" autocomplete="current-password" />
+            <br>
             <input type="checkbox" name="rememberMe"> Remember Me <br><br>
-
             <input type="submit" name="submit" value="Sign In" />
-
             <a href='forgotPassword.php'>Forgot Password?</a>
             <a href='signup.php'>Don't have an account? Signup</a>
         </fieldset>
     </form>
-
     <p id="jsError" style="color: red; text-align: center;"></p>
     <p style="color: red; text-align: center;"><?php if (isset($err1)) {
         echo $err1;
@@ -43,7 +41,6 @@ if (isset($_GET['error'])) {
     <p style="color: red; text-align: center;"><?php if (isset($err2)) {
         echo $err2;
     } ?> </p>
-
     <script src="../asset/js/validation.js"></script>
 </body>
 

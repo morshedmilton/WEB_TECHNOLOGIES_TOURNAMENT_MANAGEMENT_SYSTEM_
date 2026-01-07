@@ -1,7 +1,6 @@
 <?php
 require_once('db.php');
 
-// Create Team [PRD Item 18]
 function createTeam($team)
 {
     $con = getConnection();
@@ -11,7 +10,6 @@ function createTeam($team)
     return $status;
 }
 
-// View all teams list
 function getAllTeams()
 {
     $con = getConnection();
@@ -25,7 +23,6 @@ function getAllTeams()
     return $teams;
 }
 
-// Join Tournament (Registration)
 function joinTournament($tournament_id, $team_id)
 {
     $con = getConnection();
@@ -35,7 +32,6 @@ function joinTournament($tournament_id, $team_id)
     return $status;
 }
 
-// View registered teams for a tournament
 function getRegisteredTeams($tournament_id)
 {
     $con = getConnection();
@@ -51,7 +47,6 @@ function getRegisteredTeams($tournament_id)
     return $teams;
 }
 
-// Get list of teams created by user
 function getTeamsByCreator($username)
 {
     $con = getConnection();
@@ -65,7 +60,6 @@ function getTeamsByCreator($username)
     return $teams;
 }
 
-// Check if player is registered in system
 function isPlayerRegistered($username)
 {
     $con = getConnection();
@@ -74,5 +68,32 @@ function isPlayerRegistered($username)
     $status = mysqli_num_rows($result) > 0;
     mysqli_close($con);
     return $status;
+}
+
+function getMyTeams($username)
+{
+    $con = getConnection();
+    $sql = "SELECT * FROM teams";
+    $result = mysqli_query($con, $sql);
+    $teams = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $isMember = false;
+        if ($row['created_by'] == $username) {
+            $isMember = true;
+        } else {
+            $members = explode(',', $row['members']);
+            foreach ($members as $m) {
+                if (trim($m) == $username) {
+                    $isMember = true;
+                    break;
+                }
+            }
+        }
+        if ($isMember) {
+            array_push($teams, $row);
+        }
+    }
+    mysqli_close($con);
+    return $teams;
 }
 ?>

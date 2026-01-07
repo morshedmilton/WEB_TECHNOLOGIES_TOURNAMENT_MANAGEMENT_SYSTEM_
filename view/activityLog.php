@@ -2,7 +2,6 @@
 session_start();
 require_once('../model/tournamentModel.php');
 
-// Security Check: Only Admin can access
 if (!isset($_COOKIE['status']) || $_SESSION['role'] !== 'Admin') {
     header('location: home.php?error=unauthorized');
     exit();
@@ -23,12 +22,10 @@ $logs = getAllActivities();
 <body>
     <fieldset style="width: 800px; margin: 30px auto;">
         <legend>System Audit Trail / Activity Logs</legend>
-
         <div style="text-align: center; margin-bottom: 20px;">
             <a href="home.php" style="display: inline;">Dashboard</a> |
             <a href="allUser.php" style="display: inline;">User Management</a>
         </div>
-
         <table border="1" cellspacing="0" cellpadding="10" style="width: 100%; text-align: left;">
             <thead>
                 <tr style="background-color: #f2f2f2; text-align: center;">

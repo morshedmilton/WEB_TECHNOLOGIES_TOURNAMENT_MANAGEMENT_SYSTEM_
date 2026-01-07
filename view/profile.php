@@ -4,12 +4,11 @@ require_once('../model/userModel.php');
 if (!isset($_COOKIE['status'])) {
     header('location: login.php');
 }
-
 $user = getUserByUsername($_SESSION['username']);
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <title>My Profile</title>
@@ -17,20 +16,46 @@ $user = getUserByUsername($_SESSION['username']);
 </head>
 
 <body>
-    <fieldset>
-        <legend>Profile Details</legend>
+    <fieldset style="width: 500px; margin: 50px auto;">
+        <legend>My Profile</legend>
         <div style="text-align: center;">
-            <a href="home.php">Dashboard</a> | <a href="../controller/logout.php">Logout</a>
+            <a href="home.php">Back to Dashboard</a>
         </div>
         <hr>
-        <p><strong>Name:</strong> <?= $user['name'] ?></p>
-        <p><strong>Username:</strong> <?= $user['username'] ?></p>
-        <p><strong>Email:</strong> <?= $user['email'] ?></p>
-        <p><strong>Role:</strong> <?= $user['role'] ?></p>
-        <p><strong>Status:</strong> <?= $user['status'] ?></p>
+        <div style="text-align: center;">
+            <?php $pp = $user['profile_picture'] ? $user['profile_picture'] : 'default_user.png'; ?>
+            <img src="../uploads/users/<?php echo $pp; ?>" width="100" height="100"
+                style="border-radius: 50%; border: 2px solid #000;">
+            <br><br>
+            <form action="../controller/profilePictureController.php" method="POST" enctype="multipart/form-data">
+                <label>Change Profile Picture:</label><br>
+                <input type="file" name="profile_pic" required>
+                <button type="submit" name="upload">Upload</button>
+            </form>
+        </div>
         <hr>
-        <a href="editUser.php?id=<?= $user['id'] ?>" class="btn" style="color: white; text-align: center;">Edit
-            Profile</a>
+        <table cellpadding="5">
+            <tr>
+                <td><strong>Name:</strong></td>
+                <td><?php echo $user['name']; ?></td>
+            </tr>
+            <tr>
+                <td><strong>Username:</strong></td>
+                <td><?php echo $user['username']; ?></td>
+            </tr>
+            <tr>
+                <td><strong>Email:</strong></td>
+                <td><?php echo $user['email']; ?></td>
+            </tr>
+            <tr>
+                <td><strong>Role:</strong></td>
+                <td><?php echo $user['role']; ?></td>
+            </tr>
+        </table>
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="editUser.php?id=<?php echo $user['id']; ?>">Edit Profile</a> |
+            <a href="changePassword.php">Change Password</a>
+        </div>
     </fieldset>
 </body>
 

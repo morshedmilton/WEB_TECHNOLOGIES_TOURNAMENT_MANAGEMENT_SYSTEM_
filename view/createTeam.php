@@ -9,41 +9,23 @@ if (!isset($_COOKIE['status'])) {
 <html>
 
 <head>
-    <title>Form Team</title>
+    <title>Create Team</title>
     <link rel="stylesheet" href="../asset/css/style.css">
 </head>
 
 <body>
     <form method="post" action="../controller/teamController.php">
-        <fieldset style="width: 500px; margin: 50px auto;">
-            <legend>Form a New Team</legend>
-
-            <div style="text-align: center; margin-bottom: 10px;">
-                <a href="home.php">Dashboard</a> | <a href="teamList.php">Team List</a>
-            </div>
-
-            <div style="text-align: center; margin-bottom: 15px;">
-                <?php
-                if (isset($_GET['error'])) {
-                    if ($_GET['error'] == 'null') {
-                        echo "<span style='color: red; font-weight: bold;'>Team name cannot be empty!</span>";
-                    } elseif ($_GET['error'] == 'invalid_members') {
-                        echo "<span style='color: red; font-weight: bold;'>Error: One or more members are not registered as 'Player'!</span>";
-                    } elseif ($_GET['error'] == 'db_error') {
-                        echo "<span style='color: red; font-weight: bold;'>Database error! Please try again.</span>";
-                    }
-                }
-                ?>
-            </div>
-
-            Team Name:
-            <input type="text" name="name" placeholder="Enter team name" required><br>
-
-            Members (Usernames, comma separated):
-            <textarea name="members" rows="3" style="width: 95%;" placeholder="e.g. user1, user2, user3"></textarea>
-            <small style="color: gray;">Note: All members must be registered in the system.</small><br><br>
-
-            <input type="submit" name="submit" value="Form Team">
+        <fieldset>
+            <legend>Register New Team</legend>
+            <div style="text-align: center;"><a href="home.php">Dashboard</a></div>
+            Team Name: <input type="text" name="name" required><br>
+            Member Usernames (comma separated): <br>
+            <textarea name="members" placeholder="user1, user2, user3" rows="3" style="width: 95%;"></textarea><br>
+            <input type="submit" name="submit" value="Create Team">
+            <p style="color: red;">
+                <?php if (isset($_GET['error']) && $_GET['error'] == 'invalid_members')
+                    echo "Some members are not valid Players!"; ?>
+            </p>
         </fieldset>
     </form>
 </body>
