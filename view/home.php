@@ -45,7 +45,9 @@ $role = isset($_SESSION['role']) ? $_SESSION['role'] : 'Organizer';
                 <h4>Tournament Management</h4>
                 <ul>
                     <li><a href="createTournament.php" style="text-align: left;">Host New Tournament</a></li>
-                    <li><a href="myMatches.php" style="text-align: left;">My Matches & Tournaments</a></li>
+                    <?php if ($role != 'Admin') { ?>
+                        <li><a href="myMatches.php" style="text-align: left;">My Matches & Tournaments</a></li>
+                    <?php } ?>
                     <li><a href="teamList.php" style="text-align: left;">View All Teams</a></li>
                 </ul>
             </div>
