@@ -40,7 +40,7 @@ function updateMatchResult($match_id, $winner_id, $status)
     return $res;
 }
 
-// টিমের আইডি দিয়ে ম্যাচ বের করা
+// Get matches by team IDs
 function getMatchesByTeamIDs($teamIds)
 {
     $con = getConnection();

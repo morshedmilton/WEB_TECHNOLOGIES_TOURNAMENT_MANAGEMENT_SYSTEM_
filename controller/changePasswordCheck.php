@@ -8,23 +8,23 @@ if (isset($_POST['submit'])) {
     $confirmNewPassword = trim($_POST['confirmNewPassword']);
     $username = $_SESSION['username'];
 
-    // ১. খালি ফিল্ড চেক
+    // 1. Empty field check
     if ($currentPassword == "" || $newPassword == "" || $confirmNewPassword == "") {
         header('location: ../view/changePassword.php?error=null');
         exit();
     }
 
-    // ২. নতুন পাসওয়ার্ড ম্যাচিং চেক
+    // 2. New password matching check
     if ($newPassword !== $confirmNewPassword) {
         header('location: ../view/changePassword.php?error=mismatch');
         exit();
     }
 
-    // ৩. বর্তমান পাসওয়ার্ড সঠিক কি না চেক
+    // 3. Check if current password is correct
     $user = login($username, $currentPassword);
 
     if ($user) {
-        // ৪. পাসওয়ার্ড আপডেট করা
+        // 4. Update password
         if (updatePassword($user['id'], $newPassword)) {
             header('location: ../view/profile.php?success=password_changed');
         } else {

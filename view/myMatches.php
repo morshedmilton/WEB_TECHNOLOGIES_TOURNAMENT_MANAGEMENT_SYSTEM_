@@ -11,7 +11,7 @@ if (!isset($_COOKIE['status'])) {
 
 $username = $_SESSION['username'];
 
-// ১. ইউজারের সব টিম খুঁজে বের করা
+// 1. Find all teams of the user
 $myTeams = getMyTeams($username);
 $teamIds = [];
 foreach ($myTeams as $team) {
@@ -21,7 +21,7 @@ foreach ($myTeams as $team) {
 $myTournaments = [];
 $myMatches = [];
 
-// ২. যদি কোনো টিম থাকে, তবেই টুর্নামেন্ট এবং ম্যাচ খুঁজবে
+// 2. If teams exist, then search for tournaments and matches
 if (!empty($teamIds)) {
     $idsString = implode(',', $teamIds);
     $myTournaments = getTournamentsByTeamIDs($idsString);
@@ -107,7 +107,7 @@ if (!empty($teamIds)) {
                         </td>
                         <td>
                             <?php
-                            // হাইলাইট করা নিজের টিমকে
+                            // Highlight own team
                             $t1 = in_array($m['team1_id'], $teamIds) ? "<b>{$m['team1_name']} (You)</b>" : $m['team1_name'];
                             $t2 = in_array($m['team2_id'], $teamIds) ? "<b>{$m['team2_name']} (You)</b>" : $m['team2_name'];
                             echo "$t1 vs $t2";

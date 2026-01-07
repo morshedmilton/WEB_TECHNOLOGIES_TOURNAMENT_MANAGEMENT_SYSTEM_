@@ -1,7 +1,7 @@
 <?php
 if (isset($_GET['error'])) {
     $error = $_GET['error'];
-    // [FIX] সব ধরণের এরর হ্যান্ডলিং যোগ করা হয়েছে
+    // [FIX] Added all types of error handling
     if ($error == "db_error") {
         $err1 = "Registration failed! Database error.";
     } elseif ($error == "mismatch") {

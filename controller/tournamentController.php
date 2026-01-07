@@ -8,8 +8,8 @@ if (isset($_POST['submit'])) {
     $description = trim($_POST['content']);
     $username = $_SESSION['username'];
 
-    // ১. ব্যানার আপলোড (Item 20)
-    $banner = $_FILES['attachment']; // ব্যানার ইনপুট
+    // 1. Banner upload (Item 20)
+    $banner = $_FILES['attachment']; // Banner input
     $bannerName = "";
     if (!empty($banner['name'])) {
         $bannerExt = strtolower(pathinfo($banner['name'], PATHINFO_EXTENSION));
@@ -28,7 +28,7 @@ if (isset($_POST['submit'])) {
     $t_id = createTournament($tournament);
 
     if ($t_id) {
-        // ২. অতিরিক্ত ডকুমেন্ট আপলোড (Item 21 - Rules/PDF)
+        // 2. Additional document upload (Item 21 - Rules/PDF)
         if (!empty($_FILES['rulebook']['name'])) {
             $doc = $_FILES['rulebook'];
             $docExt = strtolower(pathinfo($doc['name'], PATHINFO_EXTENSION));

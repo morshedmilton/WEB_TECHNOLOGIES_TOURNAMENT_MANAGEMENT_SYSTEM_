@@ -76,7 +76,7 @@ function isPlayerRegistered($username)
     return $status;
 }
 
-// ব্যবহারকারীর নিজের সব টিম খুঁজে বের করা (Creator বা Member হিসেবে)
+// Find all teams of the user (as Creator or Member)
 function getMyTeams($username)
 {
     $con = getConnection();
@@ -85,11 +85,11 @@ function getMyTeams($username)
     $teams = [];
     while ($row = mysqli_fetch_assoc($result)) {
         $isMember = false;
-        // যদি ইউজার টিমের ক্রিয়েটর হয়
+        // If user is the team creator
         if ($row['created_by'] == $username) {
             $isMember = true;
         } else {
-            // মেম্বার লিস্ট চেক করা (কমা সেপারেটেড স্ট্রিং)
+            // Check member list (comma separated string)
             $members = explode(',', $row['members']);
             foreach ($members as $m) {
                 if (trim($m) == $username) {

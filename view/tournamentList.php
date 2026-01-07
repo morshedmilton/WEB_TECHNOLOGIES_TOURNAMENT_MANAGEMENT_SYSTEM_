@@ -7,7 +7,7 @@ if (!isset($_COOKIE['status'])) {
 }
 $tournaments = getAllTournaments();
 
-// লগইন করা ইউজারের তথ্য নেওয়া
+// Get logged in user's information
 $currentUser = $_SESSION['username'];
 $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'Player';
 ?>

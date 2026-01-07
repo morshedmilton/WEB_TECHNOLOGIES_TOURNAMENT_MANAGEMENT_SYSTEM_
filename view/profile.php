@@ -6,7 +6,7 @@ if (!isset($_COOKIE['status'])) {
     header('location: login.php');
 }
 
-// ইউজারের বর্তমান তথ্য আনা
+// Get current user information
 $user = getUserByUsername($_SESSION['username']);
 ?>
 

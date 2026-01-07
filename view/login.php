@@ -2,7 +2,7 @@
 // Error message handling from session
 if (isset($_GET['error'])) {
     $error = $_GET['error'];
-    // [FIX] 'invalid_user' পরিবর্তন করে 'invalid' করা হয়েছে
+    // [FIX] Changed 'invalid_user' to 'invalid'
     if ($error == "invalid") {
         $err1 = "Invalid username or password!";
     } elseif ($error == "badrequest") {

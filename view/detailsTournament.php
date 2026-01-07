@@ -14,7 +14,7 @@ if (isset($_GET['id'])) {
     $t_id = $_GET['id'];
     $t = getTournamentById($t_id);
 
-    // [FIX] কানেকশন ঠিক করার জন্য টিম এবং রেজিস্ট্রেশন ডাটা আনা হচ্ছে
+    // [FIX] Fetching team and registration data to fix connection
     $myTeams = getTeamsByCreator($_SESSION['username']);
     $registeredTeams = getRegisteredTeams($t_id);
 

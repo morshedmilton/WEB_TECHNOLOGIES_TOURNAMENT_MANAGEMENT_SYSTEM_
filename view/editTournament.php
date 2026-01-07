@@ -2,7 +2,7 @@
 session_start();
 require_once('../model/tournamentModel.php');
 
-// লগইন চেক
+// Login check
 if (!isset($_COOKIE['status'])) {
     header('location: login.php');
     exit();
@@ -11,18 +11,18 @@ if (!isset($_COOKIE['status'])) {
 if (isset($_GET['id'])) {
     $tournament = getTournamentById($_GET['id']);
 
-    // ডাটা না পাওয়া গেলে লিস্টে ফেরত পাঠানো
+    // Redirect to list if data not found
     if (!$tournament) {
         header('location: tournamentList.php');
         exit();
     }
 
-    // সিকিউরিটি চেক: অ্যাডমিন বা ক্রিয়েটর ছাড়া কেউ এক্সেস পাবে না
+    // Security check: Only admin or creator can access
     $currentUser = $_SESSION['username'];
     $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'Player';
 
     if ($userRole != 'Admin' && $currentUser != $tournament['created_by']) {
-        // পারমিশন না থাকলে লিস্ট পেজে পাঠিয়ে দেওয়া হবে
+        // Redirect to list page if no permission
         echo "<script>alert('Access Denied! You can only edit your own tournaments.'); window.location.href='tournamentList.php';</script>";
         exit();
     }

@@ -3,7 +3,7 @@ session_start();
 require_once('../model/userModel.php');
 
 if (isset($_POST['upload'])) {
-    // সেশন থেকে ইউজারনেম দিয়ে ইউজার তথ্য বের করা (আইডি পাওয়ার জন্য)
+    // Get user info using username from session (to get user ID)
     $con = getConnection();
     $username = $_SESSION['username'];
     $sql = "SELECT id FROM users WHERE username='$username'";
@@ -11,7 +11,7 @@ if (isset($_POST['upload'])) {
     $row = mysqli_fetch_assoc($res);
     $id = $row['id'];
 
-    // ফাইল হ্যান্ডলিং
+    // File handling
     $file = $_FILES['profile_pic'];
     $fileName = $file['name'];
     $fileTmp = $file['tmp_name'];
@@ -26,7 +26,7 @@ if (isset($_POST['upload'])) {
             $destination = "../uploads/users/" . $newName;
 
             if (move_uploaded_file($fileTmp, $destination)) {
-                // ডাটাবেস আপডেট
+                // Database update
                 if (updateProfilePicture($id, $newName)) {
                     header('location: ../view/profile.php?success=uploaded');
                 } else {

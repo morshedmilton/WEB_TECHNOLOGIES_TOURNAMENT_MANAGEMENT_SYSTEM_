@@ -37,7 +37,7 @@ if (!isset($_COOKIE['status'])) {
 
             <p id="jsError" style="color: red; text-align: center;">
                 <?php
-                // PHP এরর মেসেজ হ্যান্ডলিং
+                // PHP error message handling
                 if (isset($_GET['error'])) {
                     if ($_GET['error'] == 'invalid_current')
                         echo "Current password is incorrect!";
