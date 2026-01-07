@@ -1,82 +1,84 @@
-// 1. Signup Validation
-function validateSignup() {
-    let name = document.getElementById('name').value;
-    let username = document.getElementById('username').value;
-    let email = document.getElementById('email').value;
-    let password = document.getElementById('password').value;
-    let confirmPassword = document.getElementById('confirmPassword').value;
-    let errorMsg = document.getElementById('jsError');
-
-    if (name == "" || username == "" || email == "" || password == "" || confirmPassword == "") {
-        errorMsg.innerHTML = "All fields are required!";
-        return false;
-    }
-    if (password.length < 8) {
-        errorMsg.innerHTML = "Password must be at least 8 characters long!";
-        return false;
-    }
-    if (password !== confirmPassword) {
-        errorMsg.innerHTML = "Passwords do not match!";
-        return false;
-    }
-    errorMsg.innerHTML = "";
-    return true;
+/* Project's main font and background setup */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
 }
 
-// 2. Login Validation
-function validateLogin() {
-    let username = document.getElementById('username').value;
-    let password = document.getElementById('password').value;
-    let errorMsg = document.getElementById('jsError');
-
-    if (username == "" || password == "") {
-        errorMsg.innerHTML = "Please enter both username and password!";
-        return false;
-    }
-    errorMsg.innerHTML = "";
-    return true;
+/* To center the form box (Fieldset) on the screen */
+fieldset {
+    border: 2px solid #000;
+    padding: 20px;
+    width: 420px;
+    background-color: #ffffff;
+    border-radius: 5px;
+    /* Centered using 80px top-bottom and auto on both sides */
+    margin: 80px auto;
 }
 
-// 3. [FIX] Change Password Validation
-function validateChangePassword() {
-    let current = document.getElementById('currentPassword').value;
-    let newPass = document.getElementById('newPassword').value;
-    let confirmPass = document.getElementById('confirmNewPassword').value;
-    let errorMsg = document.getElementById('jsError');
-
-    if (current == "" || newPass == "" || confirmPass == "") {
-        errorMsg.innerHTML = "All fields are required!";
-        return false;
-    }
-    if (newPass.length < 8) {
-        errorMsg.innerHTML = "New password must be at least 8 characters!";
-        return false;
-    }
-    if (newPass !== confirmPass) {
-        errorMsg.innerHTML = "New passwords do not match!";
-        return false;
-    }
-    return true;
+/* To center the "Registration [Guest]" text in the line */
+legend {
+    font-weight: bold;
+    font-size: 1.2em;
+    padding: 0 15px;
+    /* Standard method to center the legend */
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
 }
 
-// 4. [FIX] Tournament Creation Validation
-function validateTournament() {
-    let title = document.getElementById('title').value;
-    let category = document.getElementById('category').value;
-    let content = document.getElementById('content').value;
-    let errorMsg = document.getElementById('jsError');
-
-    if (title == "" || category == "" || content == "") {
-        errorMsg.innerHTML = "Title, Category and Description are required!";
-        return false;
-    }
-    return true;
+/* General styling for input fields and textareas */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+textarea {
+    width: 95%;
+    padding: 8px;
+    margin: 10px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    /* Padding should not mess up the width */
 }
 
-// 5. Delete Confirmation
-function confirmDelete(id) {
-    let result = confirm("Are you sure you want to delete this tournament? This action cannot be undone.");
-    if (result) {
-        window.location.href = "../controller/deleteTournament.php?id=" + id;
-    }
+/* Submit button styling */
+input[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+input[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+/* Style for displaying JavaScript error messages */
+#jsError {
+    color: red;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+/* Style for links to login or other pages */
+a {
+    text-decoration: none;
+    color: #0066cc;
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+a:hover {
+    text-decoration: underline;
 }
