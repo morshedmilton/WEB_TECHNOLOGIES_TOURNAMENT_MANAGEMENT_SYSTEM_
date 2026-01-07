@@ -75,4 +75,34 @@ function isPlayerRegistered($username)
     mysqli_close($con);
     return $status;
 }
+
+// ব্যবহারকারীর নিজের সব টিম খুঁজে বের করা (Creator বা Member হিসেবে)
+function getMyTeams($username)
+{
+    $con = getConnection();
+    $sql = "SELECT * FROM teams";
+    $result = mysqli_query($con, $sql);
+    $teams = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $isMember = false;
+        // যদি ইউজার টিমের ক্রিয়েটর হয়
+        if ($row['created_by'] == $username) {
+            $isMember = true;
+        } else {
+            // মেম্বার লিস্ট চেক করা (কমা সেপারেটেড স্ট্রিং)
+            $members = explode(',', $row['members']);
+            foreach ($members as $m) {
+                if (trim($m) == $username) {
+                    $isMember = true;
+                    break;
+                }
+            }
+        }
+        if ($isMember) {
+            array_push($teams, $row);
+        }
+    }
+    mysqli_close($con);
+    return $teams;
+}
 ?>

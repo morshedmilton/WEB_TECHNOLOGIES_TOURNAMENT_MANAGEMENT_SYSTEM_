@@ -1,7 +1,6 @@
 <?php
 require_once('db.php');
 
-// 1. Get count of active tournaments [PRD Item 5 - Real-time]
 function getActiveTournamentCount()
 {
     $con = getConnection();
@@ -12,11 +11,9 @@ function getActiveTournamentCount()
     return $data['total'];
 }
 
-// 2. Get today's activity count [Corrected Query]
 function getTodayActivityCount()
 {
     $con = getConnection();
-    // Using DATE(timestamp) will match directly with today's date
     $sql = "SELECT COUNT(*) as total FROM activity_log WHERE DATE(timestamp) = CURDATE()";
     $result = mysqli_query($con, $sql);
     $data = mysqli_fetch_assoc($result);
@@ -24,30 +21,75 @@ function getTodayActivityCount()
     return $data['total'];
 }
 
-// 3. Log new activity
+function createTournament($tournament)
+{
+    $con = getConnection();
+    $title = mysqli_real_escape_string($con, $tournament['title']);
+    $category = mysqli_real_escape_string($con, $tournament['category']);
+    $desc = mysqli_real_escape_string($con, $tournament['description']);
+    $banner = mysqli_real_escape_string($con, $tournament['banner_image']);
+    $creator = mysqli_real_escape_string($con, $tournament['created_by']);
+
+    $sql = "insert into tournaments (title, category, description, banner_image, status, created_by) 
+            values('$title', '$category', '$desc', '$banner', 'Upcoming', '$creator')";
+
+    if (mysqli_query($con, $sql)) {
+        $last_id = mysqli_insert_id($con);
+        mysqli_close($con);
+        return $last_id;
+    }
+    mysqli_close($con);
+    return false;
+}
+
+function addAttachment($t_id, $name, $path, $type)
+{
+    $con = getConnection();
+    $t_id = mysqli_real_escape_string($con, $t_id);
+    $name = mysqli_real_escape_string($con, $name);
+    $path = mysqli_real_escape_string($con, $path);
+
+    $sql = "insert into attachments (tournament_id, file_name, file_path, file_type) 
+            values('$t_id', '$name', '$path', '$type')";
+    $res = mysqli_query($con, $sql);
+    mysqli_close($con);
+    return $res;
+}
+
+function getAttachmentsByTournament($t_id)
+{
+    $con = getConnection();
+    $t_id = mysqli_real_escape_string($con, $t_id);
+    $sql = "select * from attachments where tournament_id = '$t_id'";
+    $result = mysqli_query($con, $sql);
+    $files = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        array_push($files, $row);
+    }
+    mysqli_close($con);
+    return $files;
+}
+
 function logActivity($text)
 {
     $con = getConnection();
-    // Using mysqli_real_escape_string is safe to prevent SQL injection related to the text
     $safe_text = mysqli_real_escape_string($con, $text);
     $sql = "INSERT INTO activity_log (activity_text) VALUES ('$safe_text')";
     mysqli_query($con, $sql);
     mysqli_close($con);
 }
 
-function createTournament($tournament)
+function getTournamentById($id)
 {
     $con = getConnection();
-    $sql = "insert into tournaments (title, category, description, status, created_by) 
-            values('{$tournament['title']}', '{$tournament['category']}', '{$tournament['description']}', 'Upcoming', '{$tournament['created_by']}')";
-    if (mysqli_query($con, $sql)) {
-        return true;
-    } else {
-        return false;
-    }
+    $id = mysqli_real_escape_string($con, $id);
+    $sql = "select * from tournaments where id='$id'";
+    $result = mysqli_query($con, $sql);
+    $tournament = mysqli_fetch_assoc($result);
+    mysqli_close($con);
+    return $tournament;
 }
 
-// 4. Get list of all tournaments [PRD Item 14]
 function getAllTournaments()
 {
     $con = getConnection();
@@ -61,49 +103,32 @@ function getAllTournaments()
     return $tournaments;
 }
 
-// 5. Get a specific tournament by ID [PRD Item 15]
-function getTournamentById($id)
-{
-    $con = getConnection();
-    $sql = "select * from tournaments where id='{$id}'";
-    $result = mysqli_query($con, $sql);
-    $tournament = mysqli_fetch_assoc($result);
-    mysqli_close($con);
-    return $tournament;
-}
-
-// 6. Update tournament information [PRD Item 15]
 function updateTournament($tournament)
 {
     $con = getConnection();
-    $sql = "update tournaments set title='{$tournament['title']}', 
-            category='{$tournament['category']}', 
-            description='{$tournament['description']}', 
-            status='{$tournament['status']}' 
-            where id='{$tournament['id']}'";
+    $id = mysqli_real_escape_string($con, $tournament['id']);
+    $title = mysqli_real_escape_string($con, $tournament['title']);
+    $category = mysqli_real_escape_string($con, $tournament['category']);
+    $desc = mysqli_real_escape_string($con, $tournament['description']);
+    $status = mysqli_real_escape_string($con, $tournament['status']);
 
-    if (mysqli_query($con, $sql)) {
-        mysqli_close($con);
-        return true;
-    }
+    $sql = "update tournaments set title='$title', category='$category', description='$desc', status='$status' where id='$id'";
+
+    $result = mysqli_query($con, $sql);
     mysqli_close($con);
-    return false;
+    return $result;
 }
 
-// 7. Delete tournament [PRD Item 16]
 function deleteTournament($id)
 {
     $con = getConnection();
-    $sql = "delete from tournaments where id='{$id}'";
-    if (mysqli_query($con, $sql)) {
-        mysqli_close($con);
-        return true;
-    }
+    $id = mysqli_real_escape_string($con, $id);
+    $sql = "delete from tournaments where id='$id'";
+    $result = mysqli_query($con, $sql);
     mysqli_close($con);
-    return false;
+    return $result;
 }
 
-// Get all activity logs [PRD Item 35]
 function getAllActivities()
 {
     $con = getConnection();
@@ -115,5 +140,23 @@ function getAllActivities()
     }
     mysqli_close($con);
     return $logs;
+}
+
+function getTournamentsByTeamIDs($teamIds)
+{
+    $con = getConnection();
+    // teamIds is a comma separated string of numbers, basic cleaning
+    $teamIds = mysqli_real_escape_string($con, $teamIds);
+
+    $sql = "SELECT DISTINCT t.* FROM tournaments t 
+            JOIN tournament_registrations tr ON t.id = tr.tournament_id 
+            WHERE tr.team_id IN ($teamIds) ORDER BY t.id DESC";
+    $result = mysqli_query($con, $sql);
+    $tournaments = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        array_push($tournaments, $row);
+    }
+    mysqli_close($con);
+    return $tournaments;
 }
 ?>

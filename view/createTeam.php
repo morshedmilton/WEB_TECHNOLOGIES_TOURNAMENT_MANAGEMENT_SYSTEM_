@@ -16,7 +16,7 @@ if (!isset($_COOKIE['status'])) {
 <body>
     <form method="post" action="../controller/teamController.php">
         <fieldset style="width: 500px; margin: 50px auto;">
-            <legend>Form a New Team</legend>
+            <legend>Create a New Team</legend>
 
             <div style="text-align: center; margin-bottom: 10px;">
                 <a href="home.php">Dashboard</a> | <a href="teamList.php">Team List</a>
@@ -43,7 +43,7 @@ if (!isset($_COOKIE['status'])) {
             <textarea name="members" rows="3" style="width: 95%;" placeholder="e.g. user1, user2, user3"></textarea>
             <small style="color: gray;">Note: All members must be registered in the system.</small><br><br>
 
-            <input type="submit" name="submit" value="Form Team">
+            <input type="submit" name="submit" value="Create Team">
         </fieldset>
     </form>
 </body>

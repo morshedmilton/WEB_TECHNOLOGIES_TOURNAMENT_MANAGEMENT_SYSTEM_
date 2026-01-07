@@ -1,14 +1,35 @@
 <?php
 session_start();
 require_once('../model/tournamentModel.php');
+
+// লগইন চেক
 if (!isset($_COOKIE['status'])) {
     header('location: login.php');
+    exit();
 }
 
 if (isset($_GET['id'])) {
     $tournament = getTournamentById($_GET['id']);
+
+    // ডাটা না পাওয়া গেলে লিস্টে ফেরত পাঠানো
+    if (!$tournament) {
+        header('location: tournamentList.php');
+        exit();
+    }
+
+    // সিকিউরিটি চেক: অ্যাডমিন বা ক্রিয়েটর ছাড়া কেউ এক্সেস পাবে না
+    $currentUser = $_SESSION['username'];
+    $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'Player';
+
+    if ($userRole != 'Admin' && $currentUser != $tournament['created_by']) {
+        // পারমিশন না থাকলে লিস্ট পেজে পাঠিয়ে দেওয়া হবে
+        echo "<script>alert('Access Denied! You can only edit your own tournaments.'); window.location.href='tournamentList.php';</script>";
+        exit();
+    }
+
 } else {
     header('location: tournamentList.php');
+    exit();
 }
 ?>
 
@@ -42,6 +63,9 @@ if (isset($_GET['id'])) {
                 </option>
                 <option value="Badminton" <?php if ($tournament['category'] == 'Badminton')
                     echo 'selected'; ?>>Badminton
+                </option>
+                <option value="E-Sports" <?php if ($tournament['category'] == 'E-Sports')
+                    echo 'selected'; ?>>E-Sports
                 </option>
             </select> <br>
 

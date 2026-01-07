@@ -3,22 +3,52 @@ function searchTournament() {
     let result_area = document.getElementById('search_results');
     let main_table = document.getElementById('main_tournament_table');
 
-    // If the search box is empty, show the previous table
     if (query == "") {
         result_area.innerHTML = "";
         main_table.style.display = "table";
         return;
     }
 
-    // Sending AJAX Request
+    // 1. Create Object & Convert to JSON
+    let searchObj = { 'query': query };
+    let data = JSON.stringify(searchObj);
+
+    // 2. Send via Ajax POST
     let xhttp = new XMLHttpRequest();
-    xhttp.open('GET', '../controller/searchController.php?query=' + query, true);
-    xhttp.send();
+    xhttp.open('POST', '../controller/searchController.php', true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send('search_data=' + data);
 
     xhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
-            main_table.style.display = "none"; // Hide the original table
-            result_area.innerHTML = this.responseText; // Show search results
+            main_table.style.display = "none";
+
+            // 3. Parse JSON Response
+            let tournaments = JSON.parse(this.responseText);
+
+            // 4. Build HTML
+            if (tournaments.length > 0) {
+                let html = `<table border='1' cellspacing='0' cellpadding='10' style='width: 100%; text-align: center;'>
+                                <tr style='background-color: #f2f2f2;'>
+                                    <th>ID</th><th>Title</th><th>Category</th><th>Status</th><th>Actions</th>
+                                </tr>`;
+
+                for (let i = 0; i < tournaments.length; i++) {
+                    html += `<tr>
+                                <td>${tournaments[i].id}</td>
+                                <td>${tournaments[i].title}</td>
+                                <td>${tournaments[i].category}</td>
+                                <td>${tournaments[i].status}</td>
+                                <td>
+                                    <a href='detailsTournament.php?id=${tournaments[i].id}'>View</a>
+                                </td>
+                             </tr>`;
+                }
+                html += "</table>";
+                result_area.innerHTML = html;
+            } else {
+                result_area.innerHTML = "<p style='color: red; text-align: center;'>No tournaments found!</p>";
+            }
         }
     }
 }

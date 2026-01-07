@@ -1,8 +1,15 @@
 <?php
 if (isset($_GET['error'])) {
     $error = $_GET['error'];
-    if ($error == "regerror") {
-        $err1 = "Registration failed! Please try again.";
+    // [FIX] সব ধরণের এরর হ্যান্ডলিং যোগ করা হয়েছে
+    if ($error == "db_error") {
+        $err1 = "Registration failed! Database error.";
+    } elseif ($error == "mismatch") {
+        $err1 = "Passwords do not match!";
+    } elseif ($error == "not_unique") {
+        $err1 = "Username or Email already exists!";
+    } elseif ($error == "null") {
+        $err1 = "Please fill all fields!";
     }
 }
 ?>
@@ -21,11 +28,12 @@ if (isset($_GET['error'])) {
         onsubmit="return validateSignup()">
         <fieldset>
             <legend>Registration [Guest]</legend>
-            Name: <input type="text" name="name" id="name" value="" /> <br>
-            Username: <input type="text" name="username" id="username" value="" /> <br>
-            Email: <input type="email" name="email" id="email" value="" /> <br>
-            Password: <input type="password" name="password" id="password" value="" /> <br>
-            Confirm Password: <input type="password" name="confirmPassword" id="confirmPassword" value="" /> <br>
+            Name: <input type="text" name="name" id="name" value="" autocomplete="name" /> <br>
+            Username: <input type="text" name="username" id="username" value="" autocomplete="username" /> <br>
+            Email: <input type="email" name="email" id="email" value="" autocomplete="email" /> <br>
+            Password: <input type="password" name="password" id="password" value="" autocomplete="new-password" /> <br>
+            Confirm Password: <input type="password" name="confirmPassword" id="confirmPassword" value=""
+                autocomplete="new-password" /> <br>
 
             <input type="submit" name="submit" value="Sign Up" />
             <a href='login.php'>Sign In</a>

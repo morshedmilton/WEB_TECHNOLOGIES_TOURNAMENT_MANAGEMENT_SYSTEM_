@@ -17,7 +17,8 @@ $teams = getAllTeams();
 <body>
     <fieldset style="width: 800px; margin: 30px auto;">
         <legend>Manage Teams</legend>
-        <div style="text-align: center;"><a href="home.php">Dashboard</a> | <a href="createTeam.php">Form New Team</a>
+        <div style="text-align: center;"><a href="home.php">Dashboard</a> | <a href="createTeam.php"> Create New
+                Team</a>
         </div>
         <br>
         <table border="1" cellspacing="0" cellpadding="10" style="width: 100%; text-align: center;">

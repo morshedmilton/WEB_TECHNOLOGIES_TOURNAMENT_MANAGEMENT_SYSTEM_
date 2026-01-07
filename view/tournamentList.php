@@ -6,6 +6,10 @@ if (!isset($_COOKIE['status'])) {
     exit();
 }
 $tournaments = getAllTournaments();
+
+// লগইন করা ইউজারের তথ্য নেওয়া
+$currentUser = $_SESSION['username'];
+$userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'Player';
 ?>
 <!DOCTYPE html>
 <html>
@@ -14,10 +18,11 @@ $tournaments = getAllTournaments();
     <title>Tournament List</title>
     <link rel="stylesheet" href="../asset/css/style.css">
     <script src="../asset/js/ajax.js"></script>
+    <script src="../asset/js/validation.js"></script>
 </head>
 
 <body>
-    <fieldset style="width: 900px; margin: 30px auto;">
+    <fieldset style="width: 950px; margin: 30px auto;">
         <legend>Tournaments</legend>
         <div style="text-align: center;"><a href="home.php">Dashboard</a> | <a href="createTournament.php">Create
                 New</a></div>
@@ -34,20 +39,35 @@ $tournaments = getAllTournaments();
             style="width: 100%; text-align: center;">
             <tr style="background-color: #f2f2f2;">
                 <th>ID</th>
+                <th>Banner</th>
                 <th>Title</th>
                 <th>Category</th>
                 <th>Status</th>
+                <th>Created By</th>
                 <th>Actions</th>
             </tr>
             <?php foreach ($tournaments as $t): ?>
                 <tr>
                     <td><?php echo $t['id']; ?></td>
+                    <td>
+                        <?php if (!empty($t['banner_image'])): ?>
+                            <img src="../uploads/banners/<?php echo $t['banner_image']; ?>" width="80" height="50">
+                        <?php else: ?>
+                            No Banner
+                        <?php endif; ?>
+                    </td>
                     <td><?php echo $t['title']; ?></td>
                     <td><?php echo $t['category']; ?></td>
                     <td><?php echo $t['status']; ?></td>
+                    <td><?php echo $t['created_by']; ?></td>
                     <td>
-                        <a href="detailsTournament.php?id=<?php echo $t['id']; ?>">View</a> |
-                        <a href="editTournament.php?id=<?php echo $t['id']; ?>">Edit</a>
+                        <a href="detailsTournament.php?id=<?php echo $t['id']; ?>">View</a>
+
+                        <?php if ($userRole == 'Admin' || $currentUser == $t['created_by']) { ?>
+                            | <a href="editTournament.php?id=<?php echo $t['id']; ?>">Edit</a> |
+                            <a href="javascript:void(0)" onclick="confirmDelete(<?php echo $t['id']; ?>)"
+                                style="color: red;">Delete</a>
+                        <?php } ?>
                     </td>
                 </tr>
             <?php endforeach; ?>

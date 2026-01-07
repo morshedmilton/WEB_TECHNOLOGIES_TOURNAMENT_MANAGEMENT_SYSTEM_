@@ -17,7 +17,9 @@ if (!isset($_COOKIE['status'])) {
 
 <body>
 
-    <form method="post" action="../controller/changePasswordCheck.php" enctype="multipart/form-data">
+
+    <form method="post" action="../controller/changePasswordCheck.php" enctype="multipart/form-data"
+        onsubmit="return validateChangePassword()">
         <fieldset>
             <legend>Change Security Password</legend>
 
@@ -33,7 +35,21 @@ if (!isset($_COOKIE['status'])) {
 
             <input type="submit" name="submit" value="Change Password" />
 
-            <p id="jsError" style="color: red; text-align: center;"></p>
+            <p id="jsError" style="color: red; text-align: center;">
+                <?php
+                // PHP এরর মেসেজ হ্যান্ডলিং
+                if (isset($_GET['error'])) {
+                    if ($_GET['error'] == 'invalid_current')
+                        echo "Current password is incorrect!";
+                    if ($_GET['error'] == 'mismatch')
+                        echo "New passwords do not match!";
+                    if ($_GET['error'] == 'null')
+                        echo "Fill all fields!";
+                    if ($_GET['error'] == 'db_error')
+                        echo "Database error!";
+                }
+                ?>
+            </p>
         </fieldset>
     </form>
 

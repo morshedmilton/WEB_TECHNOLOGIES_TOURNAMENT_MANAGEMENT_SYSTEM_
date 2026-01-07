@@ -2,10 +2,13 @@
 // Error message handling from session
 if (isset($_GET['error'])) {
     $error = $_GET['error'];
-    if ($error == "invalid_user") {
+    // [FIX] 'invalid_user' পরিবর্তন করে 'invalid' করা হয়েছে
+    if ($error == "invalid") {
         $err1 = "Invalid username or password!";
     } elseif ($error == "badrequest") {
         $err2 = "Please login first!";
+    } elseif ($error == "null") {
+        $err1 = "Please fill all fields!";
     }
 }
 ?>
@@ -24,8 +27,9 @@ if (isset($_GET['error'])) {
         onsubmit="return validateLogin()">
         <fieldset>
             <legend>Signin [User/Admin]</legend>
-            Username/Email: <input type="text" name="username" id="username" value="" /> <br>
-            Password: <input type="password" name="password" id="password" value="" /> <br>
+            Username/Email: <input type="text" name="username" id="username" value="" autocomplete="username" /> <br>
+            Password: <input type="password" name="password" id="password" value="" autocomplete="current-password" />
+            <br>
 
             <input type="checkbox" name="rememberMe"> Remember Me <br><br>
 

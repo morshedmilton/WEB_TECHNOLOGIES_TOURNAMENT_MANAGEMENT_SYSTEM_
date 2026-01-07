@@ -39,4 +39,25 @@ function updateMatchResult($match_id, $winner_id, $status)
     mysqli_close($con);
     return $res;
 }
+
+// টিমের আইডি দিয়ে ম্যাচ বের করা
+function getMatchesByTeamIDs($teamIds)
+{
+    $con = getConnection();
+    $sql = "SELECT m.*, t1.name as team1_name, t2.name as team2_name, tour.title as tournament_title, tw.name as winner_name 
+            FROM matches m 
+            JOIN teams t1 ON m.team1_id = t1.id 
+            JOIN teams t2 ON m.team2_id = t2.id 
+            JOIN tournaments tour ON m.tournament_id = tour.id 
+            LEFT JOIN teams tw ON m.winner_id = tw.id 
+            WHERE m.team1_id IN ($teamIds) OR m.team2_id IN ($teamIds) 
+            ORDER BY m.match_date DESC";
+    $result = mysqli_query($con, $sql);
+    $matches = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        array_push($matches, $row);
+    }
+    mysqli_close($con);
+    return $matches;
+}
 ?>

@@ -1,34 +1,29 @@
 <?php
 require_once('../model/db.php');
 
-if (isset($_GET['query'])) {
-    $query = $_GET['query'];
-    $con = getConnection();
+// Check if data is received via POST
+if (isset($_POST['search_data'])) {
 
-    // Search by tournament title
-    $sql = "select * from tournaments where title like '%$query%'";
+    // 1. Receive JSON Data
+    $json = $_POST['search_data'];
+    $obj = json_decode($json);
+
+    $con = getConnection();
+    $query = mysqli_real_escape_string($con, $obj->query);
+
+    // 2. Process Data
+    $sql = "select * from tournaments where title like '%$query%' or category like '%$query%'";
     $result = mysqli_query($con, $sql);
 
+    $tournaments = [];
     if (mysqli_num_rows($result) > 0) {
-        echo "<table border='1' cellspacing='0' cellpadding='10' style='width: 100%; text-align: center;'>
-                <tr style='background-color: #f2f2f2;'>
-                    <th>ID</th><th>Title</th><th>Category</th><th>Status</th><th>Actions</th>
-                </tr>";
         while ($t = mysqli_fetch_assoc($result)) {
-            echo "<tr>
-                    <td>{$t['id']}</td>
-                    <td>{$t['title']}</td>
-                    <td>{$t['category']}</td>
-                    <td>{$t['status']}</td>
-                    <td>
-                        <a href='detailsTournament.php?id={$t['id']}'>View</a>
-                    </td>
-                  </tr>";
+            $tournaments[] = $t;
         }
-        echo "</table>";
-    } else {
-        echo "<p style='color: red; text-align: center;'>No tournaments found with name: '$query'</p>";
     }
+
+    // 3. Return JSON Response
+    echo json_encode($tournaments);
     mysqli_close($con);
 }
 ?>

@@ -6,49 +6,43 @@ if (isset($_POST['submit'])) {
     $title = trim($_POST['title']);
     $category = $_POST['category'];
     $description = trim($_POST['content']);
+    $username = $_SESSION['username'];
 
-    if ($title == "" || $category == "") {
-        header('location: ../view/createTournament.php?error=null');
-    } else {
-        $tournament = [
-            'title' => $title,
-            'category' => $category,
-            'description' => $description,
-            'created_by' => $_SESSION['username']
-        ];
-        if (createTournament($tournament)) {
-            logActivity("Tournament created: $title");
-            header('location: ../view/tournamentList.php?success=created');
-        } else {
-            header('location: ../view/createTournament.php?error=db_error');
-        }
+    // ১. ব্যানার আপলোড (Item 20)
+    $banner = $_FILES['attachment']; // ব্যানার ইনপুট
+    $bannerName = "";
+    if (!empty($banner['name'])) {
+        $bannerExt = strtolower(pathinfo($banner['name'], PATHINFO_EXTENSION));
+        $bannerName = "banner_" . time() . "." . $bannerExt;
+        move_uploaded_file($banner['tmp_name'], '../uploads/banners/' . $bannerName);
     }
-}
 
-// Update Logic
-if (isset($_POST['update'])) {
-    $id = $_POST['id'];
-    $title = trim($_POST['title']);
-    $category = $_POST['category'];
-    $status = $_POST['status'];
-    $description = trim($_POST['description']);
+    $tournament = [
+        'title' => $title,
+        'category' => $category,
+        'description' => $description,
+        'banner_image' => $bannerName,
+        'created_by' => $username
+    ];
 
-    if ($title == "") {
-        header("location: ../view/editTournament.php?id={$id}&error=null");
-    } else {
-        $tournament = [
-            'id' => $id,
-            'title' => $title,
-            'category' => $category,
-            'status' => $status,
-            'description' => $description
-        ];
+    $t_id = createTournament($tournament);
 
-        if (updateTournament($tournament)) {
-            header('location: ../view/tournamentList.php?success=updated');
-        } else {
-            header("location: ../view/editTournament.php?id={$id}&error=db_error");
+    if ($t_id) {
+        // ২. অতিরিক্ত ডকুমেন্ট আপলোড (Item 21 - Rules/PDF)
+        if (!empty($_FILES['rulebook']['name'])) {
+            $doc = $_FILES['rulebook'];
+            $docExt = strtolower(pathinfo($doc['name'], PATHINFO_EXTENSION));
+            $docName = "rule_" . time() . "." . $docExt;
+            $docPath = '../uploads/docs/' . $docName;
+
+            if (move_uploaded_file($doc['tmp_name'], $docPath)) {
+                addAttachment($t_id, $doc['name'], $docName, $docExt);
+            }
         }
+        logActivity("Tournament created with attachments: $title");
+        header('location: ../view/tournamentList.php?success=created');
+    } else {
+        header('location: ../view/createTournament.php?error=db_error');
     }
 }
 ?>
