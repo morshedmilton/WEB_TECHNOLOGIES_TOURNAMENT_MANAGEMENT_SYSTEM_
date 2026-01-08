@@ -1,16 +1,24 @@
+
+
+
+
 <?php
+
 session_start();
+
 require_once('../model/tournamentModel.php');
 require_once('../model/teamModel.php');
 require_once('../model/matchModel.php');
 require_once('../model/commentModel.php');
 
 if (!isset($_COOKIE['status'])) {
+    
     header('location: login.php');
     exit();
 }
 
 if (isset($_GET['id'])) {
+    
     $t_id = $_GET['id'];
     $t = getTournamentById($t_id);
 
@@ -33,7 +41,9 @@ if (isset($_GET['id'])) {
 
 <body>
     <fieldset style="width: 800px; margin: 30px auto;">
+    
         <legend>Tournament: <?php echo $t['title']; ?></legend>
+        
         <div style="text-align: center;">
             <a href="tournamentList.php">Back to List</a> | <a href="home.php">Dashboard</a>
         </div>
@@ -55,7 +65,9 @@ if (isset($_GET['id'])) {
 
         <h3>Registered Teams</h3>
         <?php
+
         if (count($registeredTeams) > 0) {
+            
             $teamNames = [];
             foreach ($registeredTeams as $rt) {
                 $teamNames[] = $rt['name'];
@@ -64,6 +76,7 @@ if (isset($_GET['id'])) {
         } else {
             echo "<p>No teams registered yet.</p>";
         }
+
         ?>
 
         <?php if ($_SESSION['role'] == 'Player' || $_SESSION['role'] == 'Organizer'): ?>
@@ -103,9 +116,11 @@ if (isset($_GET['id'])) {
         $attachments = getAttachmentsByTournament($t_id);
         if (count($attachments) > 0) {
             foreach ($attachments as $file) {
+                
                 echo "<a href='../uploads/docs/{$file['file_path']}' target='_blank' style='text-align: left; display: block;'>📄 {$file['file_name']}</a>";
             }
         } else {
+            
             echo "<p>No documents uploaded.</p>";
         }
         ?>
@@ -122,10 +137,12 @@ if (isset($_GET['id'])) {
 
                 <div style="margin-top:10px;">
                     <?php
-                    if (isset($_GET['success']) && $_GET['success'] == 'scheduled')
+                    if (isset($_GET['success']) && $_GET['success'] == 'scheduled'){
                         echo "<span style='color: green;'>Match scheduled successfully!</span>";
-                    if (isset($_GET['success']) && $_GET['success'] == 'updated')
+                    }
+                    if (isset($_GET['success']) && $_GET['success'] == 'updated'){
                         echo "<span style='color: green;'>Result updated successfully!</span>";
+                    }
                     ?>
                 </div>
             </div>
@@ -183,7 +200,8 @@ if (isset($_GET['id'])) {
                 <option value="3">⭐⭐⭐ (3)</option>
                 <option value="2">⭐⭐ (2)</option>
                 <option value="1">⭐ (1)</option>
-            </select><br>
+            </select>
+            <br>
             <textarea name="comment" placeholder="Write your feedback..." style="width: 95%; margin-top: 5px;"
                 rows="3"></textarea><br>
             <input type="submit" name="postComment" value="Post Review" style="width: auto; padding: 5px 15px;">
@@ -200,5 +218,4 @@ if (isset($_GET['id'])) {
         </div>
     </fieldset>
 </body>
-
 </html>
