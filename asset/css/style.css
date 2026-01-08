@@ -1,3 +1,6 @@
+
+
+
 /* Project's main font and background setup */
 body {
     font-family: Arial, sans-serif;
@@ -5,6 +8,8 @@ body {
     padding: 0;
     background-color: #f4f4f4;
 }
+
+
 
 /* To center the form box (Fieldset) on the screen */
 fieldset {
@@ -17,6 +22,8 @@ fieldset {
     margin: 80px auto;
 }
 
+
+
 /* To center the "Registration [Guest]" text in the line */
 legend {
     font-weight: bold;
@@ -27,6 +34,8 @@ legend {
     margin-right: auto;
     text-align: center;
 }
+
+
 
 /* General styling for input fields and textareas */
 input[type="text"],
@@ -43,6 +52,8 @@ textarea {
     box-sizing: border-box;
     /* Padding should not mess up the width */
 }
+
+
 
 /* Submit button styling */
 input[type="submit"] {
@@ -61,6 +72,8 @@ input[type="submit"]:hover {
     background-color: #45a049;
 }
 
+
+
 /* Style for displaying JavaScript error messages */
 #jsError {
     color: red;
@@ -68,6 +81,7 @@ input[type="submit"]:hover {
     text-align: center;
     margin-bottom: 10px;
 }
+
 
 /* Style for links to login or other pages */
 a {
