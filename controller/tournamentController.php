@@ -1,8 +1,13 @@
+
+
 <?php
+
 session_start();
+
 require_once('../model/tournamentModel.php');
 
 if (isset($_POST['submit'])) {
+    
     $title = trim($_POST['title']);
     $category = $_POST['category'];
     $description = trim($_POST['content']);
@@ -11,6 +16,7 @@ if (isset($_POST['submit'])) {
     // 1. Banner upload (Item 20)
     $banner = $_FILES['attachment']; // Banner input
     $bannerName = "";
+    
     if (!empty($banner['name'])) {
         $bannerExt = strtolower(pathinfo($banner['name'], PATHINFO_EXTENSION));
         $bannerName = "banner_" . time() . "." . $bannerExt;
@@ -30,19 +36,26 @@ if (isset($_POST['submit'])) {
     if ($t_id) {
         // 2. Additional document upload (Item 21 - Rules/PDF)
         if (!empty($_FILES['rulebook']['name'])) {
+            
             $doc = $_FILES['rulebook'];
             $docExt = strtolower(pathinfo($doc['name'], PATHINFO_EXTENSION));
             $docName = "rule_" . time() . "." . $docExt;
             $docPath = '../uploads/docs/' . $docName;
 
             if (move_uploaded_file($doc['tmp_name'], $docPath)) {
+                
                 addAttachment($t_id, $doc['name'], $docName, $docExt);
             }
         }
+        
         logActivity("Tournament created with attachments: $title");
+        
         header('location: ../view/tournamentList.php?success=created');
+        
     } else {
+        
         header('location: ../view/createTournament.php?error=db_error');
     }
 }
+    
 ?>
