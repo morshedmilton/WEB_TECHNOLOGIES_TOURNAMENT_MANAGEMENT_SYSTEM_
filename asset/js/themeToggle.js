@@ -1,3 +1,7 @@
+
+
+
+
 // Theme Toggle Script - Dark/Light Mode
 
 function toggleTheme() {
@@ -25,6 +29,8 @@ function applyDarkTheme() {
         fs.style.color = '#eee';
     });
 
+
+    
     // Style all tables
     let tables = document.querySelectorAll('table');
     tables.forEach(function (t) {
@@ -32,6 +38,8 @@ function applyDarkTheme() {
         t.style.color = '#eee';
     });
 
+
+    
     // Style all inputs
     let inputs = document.querySelectorAll('input, select, textarea');
     inputs.forEach(function (inp) {
@@ -40,12 +48,14 @@ function applyDarkTheme() {
         inp.style.borderColor = '#e94560';
     });
 
+    
     // Style all links
     let links = document.querySelectorAll('a');
     links.forEach(function (a) {
         a.style.color = '#e94560';
     });
 }
+
 
 function applyLightTheme() {
     document.body.style.backgroundColor = '';
@@ -59,6 +69,8 @@ function applyLightTheme() {
         fs.style.color = '';
     });
 
+
+    
     // Reset tables
     let tables = document.querySelectorAll('table');
     tables.forEach(function (t) {
@@ -74,6 +86,8 @@ function applyLightTheme() {
         inp.style.borderColor = '';
     });
 
+
+    
     // Reset links
     let links = document.querySelectorAll('a');
     links.forEach(function (a) {
