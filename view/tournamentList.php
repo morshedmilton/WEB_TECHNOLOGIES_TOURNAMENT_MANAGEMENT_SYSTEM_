@@ -1,19 +1,29 @@
+
+
+
+
+
 <?php
+
 session_start();
+
 require_once('../model/tournamentModel.php');
+
 if (!isset($_COOKIE['status'])) {
     header('location: login.php');
     exit();
 }
+
 $tournaments = getAllTournaments();
 
 // Get logged in user's information
 $currentUser = $_SESSION['username'];
 $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'Player';
+
 ?>
+
 <!DOCTYPE html>
 <html>
-
 <head>
     <title>Tournament List</title>
     <link rel="stylesheet" href="../asset/css/style.css">
@@ -35,8 +45,8 @@ $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'Player';
 
         <div id="search_results"></div>
 
-        <table id="main_tournament_table" border="1" cellspacing="0" cellpadding="10"
-            style="width: 100%; text-align: center;">
+        <table id="main_tournament_table" border="1" cellspacing="0" cellpadding="10" style="width: 100%; text-align: center;">
+            
             <tr style="background-color: #f2f2f2;">
                 <th>ID</th>
                 <th>Banner</th>
@@ -46,6 +56,7 @@ $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'Player';
                 <th>Created By</th>
                 <th>Actions</th>
             </tr>
+            
             <?php foreach ($tournaments as $t): ?>
                 <tr>
                     <td><?php echo $t['id']; ?></td>
@@ -60,6 +71,7 @@ $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'Player';
                     <td><?php echo $t['category']; ?></td>
                     <td><?php echo $t['status']; ?></td>
                     <td><?php echo $t['created_by']; ?></td>
+                    
                     <td>
                         <a href="detailsTournament.php?id=<?php echo $t['id']; ?>">View</a>
 
@@ -69,10 +81,10 @@ $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'Player';
                                 style="color: red;">Delete</a>
                         <?php } ?>
                     </td>
+                    
                 </tr>
             <?php endforeach; ?>
         </table>
     </fieldset>
 </body>
-
 </html>
