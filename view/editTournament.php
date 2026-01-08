@@ -1,18 +1,27 @@
+
+
+
+
 <?php
+
 session_start();
+
 require_once('../model/tournamentModel.php');
 
 // Login check
 if (!isset($_COOKIE['status'])) {
+    
     header('location: login.php');
     exit();
 }
 
 if (isset($_GET['id'])) {
+    
     $tournament = getTournamentById($_GET['id']);
 
     // Redirect to list if data not found
     if (!$tournament) {
+        
         header('location: tournamentList.php');
         exit();
     }
@@ -28,9 +37,11 @@ if (isset($_GET['id'])) {
     }
 
 } else {
+    
     header('location: tournamentList.php');
     exit();
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -51,7 +62,8 @@ if (isset($_GET['id'])) {
 
             <input type="hidden" name="id" value="<?php echo $tournament['id']; ?>">
 
-            Title: <input type="text" name="title" value="<?php echo $tournament['title']; ?>"> <br>
+            Title: <input type="text" name="title" value="<?php echo $tournament['title']; ?>"> 
+            <br>
 
             Category:
             <select name="category">
@@ -67,7 +79,8 @@ if (isset($_GET['id'])) {
                 <option value="E-Sports" <?php if ($tournament['category'] == 'E-Sports')
                     echo 'selected'; ?>>E-Sports
                 </option>
-            </select> <br>
+            </select> 
+            <br>
 
             Status:
             <select name="status">
@@ -79,15 +92,17 @@ if (isset($_GET['id'])) {
                 <option value="Completed" <?php if ($tournament['status'] == 'Completed')
                     echo 'selected'; ?>>Completed
                 </option>
-            </select> <br>
+            </select> 
+            <br>
 
-            Description: <br>
+            Description: 
+            <br>
             <textarea name="description" rows="5"
-                style="width: 95%;"><?php echo $tournament['description']; ?></textarea> <br>
+                style="width: 95%;"><?php echo $tournament['description']; ?></textarea> 
+            <br>
 
             <input type="submit" name="update" value="Update Tournament">
         </fieldset>
     </form>
 </body>
-
 </html>
