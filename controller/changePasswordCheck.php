@@ -36,4 +36,12 @@ if (isset($_POST['submit'])) {
 } else {
     header('location: ../view/changePassword.php');
 }
+
+/**
+ * ============================================
+ * @author MILTON
+ * @task Feature 3: Profile Management - Change Password with Validation
+ * @date 2026-01-03
+ * ============================================
+ */
 ?>

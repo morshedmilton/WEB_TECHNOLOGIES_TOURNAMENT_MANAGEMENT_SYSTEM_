@@ -10,4 +10,12 @@ setcookie('status', 'true', time() - 3600, '/');
 
 // Redirect to login page
 header('location: ../view/login.php');
+
+/**
+ * ============================================
+ * @author MILTON
+ * @task Feature 1: Authentication - Session Destroy and Logout
+ * @date 2025-12-31
+ * ============================================
+ */
 ?>

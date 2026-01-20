@@ -24,4 +24,12 @@ if (isset($_POST['submit'])) {
 } else {
     header('location: ../view/forgotPassword.php');
 }
+
+/**
+ * ============================================
+ * @author MILTON
+ * @task Feature 1: Authentication - Forgot Password with Email Simulation
+ * @date 2026-01-02
+ * ============================================
+ */
 ?>

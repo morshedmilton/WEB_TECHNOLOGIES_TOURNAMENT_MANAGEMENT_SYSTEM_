@@ -44,4 +44,12 @@ if (isset($_POST['upload'])) {
 } else {
     header('location: ../view/profile.php');
 }
+
+/**
+ * ============================================
+ * @author MILTON
+ * @task Feature 3: Profile Management - Profile Picture Upload with Validation
+ * @date 2026-01-04
+ * ============================================
+ */
 ?>

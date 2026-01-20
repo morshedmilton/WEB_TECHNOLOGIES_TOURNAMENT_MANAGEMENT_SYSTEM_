@@ -57,3 +57,11 @@ if (!isset($_COOKIE['status'])) {
 </body>
 
 </html>
+
+<!--
+============================================
+@author MILTON
+@task Feature 3: Profile Management - Change Password Form
+@date 2026-01-03
+============================================
+-->

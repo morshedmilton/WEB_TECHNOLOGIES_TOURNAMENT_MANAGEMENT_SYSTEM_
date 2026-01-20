@@ -52,3 +52,11 @@ if (isset($_GET['error'])) {
 </body>
 
 </html>
+
+<!--
+============================================
+@author MILTON
+@task Feature 1: Authentication - Sign-in Form with Remember Me
+@date 2025-12-29
+============================================
+-->
