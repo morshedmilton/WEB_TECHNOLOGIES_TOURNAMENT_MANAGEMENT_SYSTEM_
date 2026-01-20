@@ -106,3 +106,11 @@ if (isset($_GET['id'])) {
     </form>
 </body>
 </html>
+
+<!--
+============================================
+@author SHAHRIAR
+@task Feature 5: Content Management - Edit Tournament Form
+@date 2026-01-02
+============================================
+-->

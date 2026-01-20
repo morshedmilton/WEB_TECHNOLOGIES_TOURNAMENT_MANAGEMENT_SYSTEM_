@@ -57,5 +57,12 @@ if (isset($_POST['submit'])) {
         header('location: ../view/createTournament.php?error=db_error');
     }
 }
-    
+
+/**
+ * ============================================
+ * @author SHAHRIAR
+ * @task Feature 5: Content Management - Create Tournament with File Upload
+ * @date 2025-12-27
+ * ============================================
+ */
 ?>
