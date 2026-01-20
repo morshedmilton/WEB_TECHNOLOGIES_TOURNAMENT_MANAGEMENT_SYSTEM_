@@ -55,7 +55,7 @@ function searchTournament() {
 
 /**
  * ============================================
- * @author TOM
+ * @author CodewithTonmoy
  * @task Feature 8: Search - Live AJAX Search with JSON
  * @date 2026-01-14
  * ============================================
