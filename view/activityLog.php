@@ -59,3 +59,11 @@ $logs = getAllActivities();
 </body>
 
 </html>
+
+<!--
+============================================
+@author TOM
+@task Feature 13: Activity Log - Audit Trail Viewer
+@date 2026-01-17
+============================================
+-->
