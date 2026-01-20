@@ -52,3 +52,11 @@ function searchTournament() {
         }
     }
 }
+
+/**
+ * ============================================
+ * @author TOM
+ * @task Feature 8: Search - Live AJAX Search with JSON
+ * @date 2026-01-14
+ * ============================================
+ */

@@ -75,3 +75,11 @@ $role = isset($_SESSION['role']) ? $_SESSION['role'] : 'Organizer';
 </body>
 
 </html>
+
+<!--
+============================================
+@author TOM
+@task Feature 14: Reporting - System Summary Reports
+@date 2026-01-16
+============================================
+-->

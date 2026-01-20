@@ -30,7 +30,7 @@ function applyDarkTheme() {
     });
 
 
-    
+
     // Style all tables
     let tables = document.querySelectorAll('table');
     tables.forEach(function (t) {
@@ -39,7 +39,7 @@ function applyDarkTheme() {
     });
 
 
-    
+
     // Style all inputs
     let inputs = document.querySelectorAll('input, select, textarea');
     inputs.forEach(function (inp) {
@@ -48,7 +48,7 @@ function applyDarkTheme() {
         inp.style.borderColor = '#e94560';
     });
 
-    
+
     // Style all links
     let links = document.querySelectorAll('a');
     links.forEach(function (a) {
@@ -70,7 +70,7 @@ function applyLightTheme() {
     });
 
 
-    
+
     // Reset tables
     let tables = document.querySelectorAll('table');
     tables.forEach(function (t) {
@@ -87,7 +87,7 @@ function applyLightTheme() {
     });
 
 
-    
+
     // Reset links
     let links = document.querySelectorAll('a');
     links.forEach(function (a) {
@@ -102,3 +102,11 @@ document.addEventListener('DOMContentLoaded', function () {
         applyDarkTheme();
     }
 });
+
+/**
+ * ============================================
+ * @author TOM
+ * @task Feature 19: Preferences - Dark/Light Theme Toggle
+ * @date 2026-01-13
+ * ============================================
+ */

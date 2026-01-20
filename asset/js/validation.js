@@ -75,3 +75,11 @@ function confirmDelete(id) {
         window.location.href = "../controller/deleteTournament.php?id=" + id;
     }
 }
+
+/**
+ * ============================================
+ * @author TOM
+ * @task Feature 16: Security - Client-side Form Validation
+ * @date 2026-01-12
+ * ============================================
+ */
