@@ -60,4 +60,12 @@ function getMatchesByTeamIDs($teamIds)
     mysqli_close($con);
     return $matches;
 }
+
+/**
+ * ============================================
+ * @author TANJIM
+ * @task Feature 6: Match Management - Schedule and Update Results
+ * @date 2026-01-06
+ * ============================================
+ */
 ?>

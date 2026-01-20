@@ -23,3 +23,12 @@ function getCommentsByTournament($tournament_id)
     mysqli_close($con);
     return $comments;
 }
+
+/**
+ * ============================================
+ * @author TANJIM
+ * @task Feature 17: Feedback and Comments - Rating and Review System
+ * @date 2026-01-07
+ * ============================================
+ */
+?>

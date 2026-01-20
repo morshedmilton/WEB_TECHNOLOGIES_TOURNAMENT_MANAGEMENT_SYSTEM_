@@ -45,4 +45,12 @@ if (isset($_POST['join'])) {
         header("location: ../view/detailsTournament.php?id=$t_id&error=db_error");
     }
 }
+
+/**
+ * ============================================
+ * @author TANJIM
+ * @task Feature 6: Team Controller - Create Team and Join Tournament
+ * @date 2026-01-08
+ * ============================================
+ */
 ?>
