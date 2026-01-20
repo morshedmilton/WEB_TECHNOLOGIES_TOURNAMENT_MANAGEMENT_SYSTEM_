@@ -27,7 +27,7 @@ if (isset($_POST['submit'])) {
 
 /**
  * ============================================
- * @author MILTON
+ * @author morshedmilton
  * @task Feature 1: Authentication - Forgot Password with Email Simulation
  * @date 2026-01-02
  * ============================================

@@ -53,7 +53,7 @@ if (isset($_GET['error'])) {
 
 <!--
 ============================================
-@author MILTON
+@author morshedmilton
 @task Feature 1: Authentication - Sign-up Registration Form
 @date 2025-12-30
 ============================================

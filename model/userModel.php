@@ -122,7 +122,7 @@ function updatePassword($id, $newPassword)
 
 /**
  * ============================================
- * @author MILTON
+ * @author morshedmilton
  * @task Feature 1: Authentication - User Model with Login/Signup/Password functions
  * @date 2025-12-28
  * ============================================

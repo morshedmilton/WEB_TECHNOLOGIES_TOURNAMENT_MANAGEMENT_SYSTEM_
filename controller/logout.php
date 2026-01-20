@@ -13,7 +13,7 @@ header('location: ../view/login.php');
 
 /**
  * ============================================
- * @author MILTON
+ * @author morshedmilton
  * @task Feature 1: Authentication - Session Destroy and Logout
  * @date 2025-12-31
  * ============================================
