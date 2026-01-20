@@ -29,7 +29,7 @@ if (isset($_POST['submit'])) {
 
 /**
  * ============================================
- * @author MILTON
+ * @author morshedmilton
  * @task Feature 1: Authentication - Sign-up with Validation
  * @date 2025-12-30
  * ============================================

@@ -39,7 +39,7 @@ if (isset($_POST['submit'])) {
 
 /**
  * ============================================
- * @author MILTON
+ * @author morshedmilton
  * @task Feature 3: Profile Management - Change Password with Validation
  * @date 2026-01-03
  * ============================================
