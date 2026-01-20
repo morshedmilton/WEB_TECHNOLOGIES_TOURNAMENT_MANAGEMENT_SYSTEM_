@@ -88,3 +88,11 @@ $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'Player';
     </fieldset>
 </body>
 </html>
+
+<!--
+============================================
+@author SHAHRIAR
+@task Feature 5: Content Management - Tournament List with Search
+@date 2025-12-30
+============================================
+-->

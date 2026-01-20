@@ -219,3 +219,11 @@ if (isset($_GET['id'])) {
     </fieldset>
 </body>
 </html>
+
+<!--
+============================================
+@author SHAHRIAR
+@task Feature 5: Content Management - Tournament Details with Teams and Matches
+@date 2025-12-31
+============================================
+-->

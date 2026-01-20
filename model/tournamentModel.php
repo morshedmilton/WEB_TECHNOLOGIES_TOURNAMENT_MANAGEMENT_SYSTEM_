@@ -155,4 +155,12 @@ function getTournamentsByTeamIDs($teamIds){
     mysqli_close($con);
     return $tournaments;
 }
+
+/**
+ * ============================================
+ * @author SHAHRIAR
+ * @task Feature 5: Content Management - Tournament CRUD Operations
+ * @date 2025-12-26
+ * ============================================
+ */
 ?>

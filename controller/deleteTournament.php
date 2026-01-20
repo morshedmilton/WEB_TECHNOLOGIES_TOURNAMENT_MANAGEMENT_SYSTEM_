@@ -35,4 +35,11 @@ if (isset($_GET['id'])) {
     header('location: ../view/tournamentList.php');
 }
 
+/**
+ * ============================================
+ * @author SHAHRIAR
+ * @task Feature 5: Content Management - Delete Tournament with Activity Log
+ * @date 2025-12-28
+ * ============================================
+ */
 ?>
