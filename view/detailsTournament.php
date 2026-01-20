@@ -222,7 +222,7 @@ if (isset($_GET['id'])) {
 
 <!--
 ============================================
-@author SHAHRIAR
+@author ShahriyarH10
 @task Feature 5: Content Management - Tournament Details with Teams and Matches
 @date 2025-12-31
 ============================================

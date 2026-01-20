@@ -379,7 +379,7 @@ COMMIT;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 
 -- ============================================
--- @author SHAHRIAR
+-- @author ShahriyarH10
 -- @task Feature 16: Security - Database Schema Design
 -- @date 2025-12-25
 -- ============================================

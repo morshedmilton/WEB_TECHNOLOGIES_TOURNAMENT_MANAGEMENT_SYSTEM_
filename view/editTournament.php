@@ -109,7 +109,7 @@ if (isset($_GET['id'])) {
 
 <!--
 ============================================
-@author SHAHRIAR
+@author ShahriyarH10
 @task Feature 5: Content Management - Edit Tournament Form
 @date 2026-01-02
 ============================================

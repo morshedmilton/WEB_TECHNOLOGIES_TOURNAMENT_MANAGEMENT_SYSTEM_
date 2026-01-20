@@ -62,7 +62,7 @@ if (!isset($_COOKIE['status'])) {
 
 <!--
 ============================================
-@author SHAHRIAR
+@author ShahriyarH10
 @task Feature 5: Content Management - Create Tournament Form
 @date 2025-12-29
 ============================================
