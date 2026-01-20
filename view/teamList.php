@@ -44,7 +44,7 @@ $teams = getAllTeams();
 
 <!--
 ============================================
-@author TANJIM
+@author MdTanjimAhamad
 @task Feature 6: Team Management - Team List Table
 @date 2026-01-09
 ============================================

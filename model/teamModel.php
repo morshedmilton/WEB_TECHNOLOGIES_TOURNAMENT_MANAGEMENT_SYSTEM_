@@ -108,7 +108,7 @@ function getMyTeams($username)
 
 /**
  * ============================================
- * @author TANJIM
+ * @author MdTanjimAhamad
  * @task Feature 6: Team Management - Create Team and Join Tournament
  * @date 2026-01-05
  * ============================================

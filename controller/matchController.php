@@ -42,7 +42,7 @@ if (isset($_POST['update_result'])) {
 
 /**
  * ============================================
- * @author TANJIM
+ * @author MdTanjimAhamad
  * @task Feature 6: Match Controller - Schedule Match and Update Results
  * @date 2026-01-09
  * ============================================
