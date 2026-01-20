@@ -11,7 +11,7 @@ function getConnection(){
 
 /**
  * ============================================
- * @author SHAHRIAR
+ * @author ShahriyarH10
  * @task Feature 16: Security - Secure Database Connection
  * @date 2025-12-25
  * ============================================

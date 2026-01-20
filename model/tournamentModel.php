@@ -158,7 +158,7 @@ function getTournamentsByTeamIDs($teamIds){
 
 /**
  * ============================================
- * @author SHAHRIAR
+ * @author ShahriyarH10
  * @task Feature 5: Content Management - Tournament CRUD Operations
  * @date 2025-12-26
  * ============================================

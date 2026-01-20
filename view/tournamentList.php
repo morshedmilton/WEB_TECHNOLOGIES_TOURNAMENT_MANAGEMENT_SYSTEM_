@@ -91,7 +91,7 @@ $userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'Player';
 
 <!--
 ============================================
-@author SHAHRIAR
+@author ShahriyarH10
 @task Feature 5: Content Management - Tournament List with Search
 @date 2025-12-30
 ============================================

@@ -60,7 +60,7 @@ if (isset($_POST['submit'])) {
 
 /**
  * ============================================
- * @author SHAHRIAR
+ * @author ShahriyarH10
  * @task Feature 5: Content Management - Create Tournament with File Upload
  * @date 2025-12-27
  * ============================================
