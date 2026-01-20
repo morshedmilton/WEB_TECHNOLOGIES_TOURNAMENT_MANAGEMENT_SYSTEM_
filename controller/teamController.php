@@ -48,7 +48,7 @@ if (isset($_POST['join'])) {
 
 /**
  * ============================================
- * @author TANJIM
+ * @author MdTanjimAhamad
  * @task Feature 6: Team Controller - Create Team and Join Tournament
  * @date 2026-01-08
  * ============================================

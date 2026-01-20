@@ -63,7 +63,7 @@ function getMatchesByTeamIDs($teamIds)
 
 /**
  * ============================================
- * @author TANJIM
+ * @author MdTanjimAhamad
  * @task Feature 6: Match Management - Schedule and Update Results
  * @date 2026-01-06
  * ============================================

@@ -26,7 +26,7 @@ function getCommentsByTournament($tournament_id)
 
 /**
  * ============================================
- * @author TANJIM
+ * @author MdTanjimAhamad
  * @task Feature 17: Feedback and Comments - Rating and Review System
  * @date 2026-01-07
  * ============================================
