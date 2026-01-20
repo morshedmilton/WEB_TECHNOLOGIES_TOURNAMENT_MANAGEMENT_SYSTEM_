@@ -50,3 +50,11 @@ if (isset($_GET['error'])) {
 </body>
 
 </html>
+
+<!--
+============================================
+@author MILTON
+@task Feature 1: Authentication - Sign-up Registration Form
+@date 2025-12-30
+============================================
+-->

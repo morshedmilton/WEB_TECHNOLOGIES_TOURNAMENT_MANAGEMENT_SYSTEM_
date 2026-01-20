@@ -69,3 +69,11 @@ $user = getUserByUsername($_SESSION['username']);
 </body>
 
 </html>
+
+<!--
+============================================
+@author MILTON
+@task Feature 3: Profile Management - View Profile with Picture Upload
+@date 2026-01-01
+============================================
+-->

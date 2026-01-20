@@ -119,4 +119,12 @@ function updatePassword($id, $newPassword)
     mysqli_close($con);
     return $result;
 }
+
+/**
+ * ============================================
+ * @author MILTON
+ * @task Feature 1: Authentication - User Model with Login/Signup/Password functions
+ * @date 2025-12-28
+ * ============================================
+ */
 ?>

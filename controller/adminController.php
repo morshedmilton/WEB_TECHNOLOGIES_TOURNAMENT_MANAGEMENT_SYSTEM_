@@ -18,4 +18,12 @@ if (isset($_POST['update_user'])) {
         header("location: ../view/editUser.php?id=$id&error=db_error");
     }
 }
+
+/**
+ * ============================================
+ * @author MILTON
+ * @task Feature 4: User Management - Admin Update User Role and Status
+ * @date 2026-01-05
+ * ============================================
+ */
 ?>

@@ -20,4 +20,12 @@ if (isset($_POST['submit'])) {
         }
     }
 }
+
+/**
+ * ============================================
+ * @author MILTON
+ * @task Feature 1: Authentication - Sign-in with Session and Cookie
+ * @date 2025-12-29
+ * ============================================
+ */
 ?>

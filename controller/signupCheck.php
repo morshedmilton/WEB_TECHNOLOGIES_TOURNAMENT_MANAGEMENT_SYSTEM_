@@ -26,4 +26,12 @@ if (isset($_POST['submit'])) {
         header('location: ../view/signup.php?error=not_unique');
     }
 }
+
+/**
+ * ============================================
+ * @author MILTON
+ * @task Feature 1: Authentication - Sign-up with Validation
+ * @date 2025-12-30
+ * ============================================
+ */
 ?>

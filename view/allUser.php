@@ -51,3 +51,11 @@ $users = getAllUsers();
 </body>
 
 </html>
+
+<!--
+============================================
+@author MILTON
+@task Feature 4: User Management - Admin User List Table
+@date 2026-01-04
+============================================
+-->
