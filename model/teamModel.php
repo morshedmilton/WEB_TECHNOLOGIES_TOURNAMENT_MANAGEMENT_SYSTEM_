@@ -105,4 +105,12 @@ function getMyTeams($username)
     mysqli_close($con);
     return $teams;
 }
+
+/**
+ * ============================================
+ * @author TANJIM
+ * @task Feature 6: Team Management - Create Team and Join Tournament
+ * @date 2026-01-05
+ * ============================================
+ */
 ?>

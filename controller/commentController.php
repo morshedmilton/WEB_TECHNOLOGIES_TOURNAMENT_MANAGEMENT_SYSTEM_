@@ -20,4 +20,12 @@ if (isset($_POST['postComment'])) {
         }
     }
 }
+
+/**
+ * ============================================
+ * @author TANJIM
+ * @task Feature 17: Comment Controller - Post and Manage Reviews
+ * @date 2026-01-10
+ * ============================================
+ */
 ?>

@@ -39,4 +39,12 @@ if (isset($_POST['update_result'])) {
         header("location: ../view/updateMatch.php?match_id=$m_id&error=db_error");
     }
 }
+
+/**
+ * ============================================
+ * @author TANJIM
+ * @task Feature 6: Match Controller - Schedule Match and Update Results
+ * @date 2026-01-09
+ * ============================================
+ */
 ?>
