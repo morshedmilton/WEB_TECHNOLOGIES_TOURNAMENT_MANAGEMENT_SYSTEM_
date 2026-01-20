@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 /**
  * ============================================
- * @author TOM
+ * @author CodewithTonmoy
  * @task Feature 19: Preferences - Dark/Light Theme Toggle
  * @date 2026-01-13
  * ============================================

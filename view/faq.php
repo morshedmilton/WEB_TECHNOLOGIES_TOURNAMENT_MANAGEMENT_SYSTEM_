@@ -46,7 +46,7 @@
 
 <!--
 ============================================
-@author TOM
+@author CodewithTonmoy
 @task Feature 18: Help and FAQ - Frequently Asked Questions
 @date 2026-01-19
 ============================================

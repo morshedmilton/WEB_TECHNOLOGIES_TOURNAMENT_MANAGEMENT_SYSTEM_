@@ -78,7 +78,7 @@ $role = isset($_SESSION['role']) ? $_SESSION['role'] : 'Organizer';
 
 <!--
 ============================================
-@author TOM
+@author CodewithTonmoy
 @task Feature 2: User Dashboard - Main Navigation and Quick Stats
 @date 2026-01-15
 ============================================
