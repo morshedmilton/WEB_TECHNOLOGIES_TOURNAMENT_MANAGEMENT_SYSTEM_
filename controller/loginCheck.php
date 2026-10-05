@@ -1,31 +1,39 @@
 <?php
-session_start();
-require_once('../model/userModel.php');
+require_once '../model/userModel.php';
+require_once '../model/activityModel.php';
+require_post('login.php');
 
-if (isset($_POST['submit'])) {
-    $username = trim($_POST['username']);
-    $password = trim($_POST['password']);
+$identifier = trim($_POST['username'] ?? '');
+$password = $_POST['password'] ?? '';
 
-    if ($username == "" || $password == "") {
-        header('location: ../view/login.php?error=null');
-    } else {
-        $user = login($username, $password);
-        if ($user) {
-            setcookie('status', 'true', time() + 3600, '/');
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['role'] = $user['role'];
-            header('location: ../view/home.php');
-        } else {
-            header('location: ../view/login.php?error=invalid');
-        }
-    }
+if ($identifier === '' || $password === '') {
+    flash('error', 'Please enter both username and password.');
+    redirect('../view/login.php');
 }
 
-/**
- * ============================================
- * @author morshedmilton
- * @task Feature 1: Authentication - Sign-in with Session and Cookie
- * @date 2025-12-29
- * ============================================
- */
-?>
+// Basic brute-force throttle: 8 failed attempts per session per 10 minutes.
+$_SESSION['attempts'] = array_filter($_SESSION['attempts'] ?? [], function ($t) {
+    return $t > time() - 600;
+});
+if (count($_SESSION['attempts']) >= 8) {
+    flash('error', 'Too many attempts. Please wait a few minutes and try again.');
+    redirect('../view/login.php');
+}
+
+$user = authenticate($identifier, $password);
+if ($user === null) {
+    flash('error', 'This account has been blocked. Contact an administrator.');
+    redirect('../view/login.php');
+}
+if ($user === false) {
+    $_SESSION['attempts'][] = time();
+    flash('error', 'Invalid username or password.');
+    redirect('../view/login.php');
+}
+
+session_regenerate_id(true);
+$_SESSION['user_id'] = (int) $user['id'];
+unset($_SESSION['attempts']);
+logActivity($user['username'] . ' signed in', $user['id']);
+flash('success', 'Welcome back, ' . explode(' ', $user['name'])[0] . '!');
+redirect('../view/home.php');

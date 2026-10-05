@@ -1,37 +1,39 @@
 <?php
-session_start();
-require_once('../model/userModel.php');
-require_once('../model/tournamentModel.php');
+require_once '../model/userModel.php';
+require_once '../model/activityModel.php';
+require_post('signup.php');
 
-if (isset($_POST['submit'])) {
-    $name = trim($_POST['name']);
-    $username = trim($_POST['username']);
-    $email = trim($_POST['email']);
-    $password = trim($_POST['password']);
-    $confirmPassword = trim($_POST['confirmPassword']);
+$name = trim($_POST['name'] ?? '');
+$username = trim($_POST['username'] ?? '');
+$email = trim($_POST['email'] ?? '');
+$password = $_POST['password'] ?? '';
+$confirm = $_POST['confirmPassword'] ?? '';
+$role = ($_POST['role'] ?? 'Player') === 'Organizer' ? 'Organizer' : 'Player';
 
-    if ($name == "" || $username == "" || $email == "" || $password == "" || $confirmPassword == "") {
-        header('location: ../view/signup.php?error=null');
-    } elseif ($password !== $confirmPassword) {
-        header('location: ../view/signup.php?error=mismatch');
-    } elseif (isUnique($username, $email)) {
-        $user = ['name' => $name, 'username' => $username, 'email' => $email, 'password' => $password];
-        if (signup($user)) {
-            logActivity("New user registered: $username");
-            header('location: ../view/login.php?success=registered');
-        } else {
-            header('location: ../view/signup.php?error=db_error');
-        }
-    } else {
-        header('location: ../view/signup.php?error=not_unique');
-    }
+$_SESSION['old'] = ['name' => $name, 'username' => $username, 'email' => $email, 'role' => $role];
+
+$error = null;
+if ($name === '' || $username === '' || $email === '' || $password === '') {
+    $error = 'Please fill in all fields.';
+} elseif (!preg_match('/^[A-Za-z0-9._-]{3,30}$/', $username)) {
+    $error = 'Username must be 3-30 characters: letters, numbers, dot, dash or underscore.';
+} elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $error = 'Please enter a valid email address.';
+} elseif (strlen($password) < 8) {
+    $error = 'Password must be at least 8 characters.';
+} elseif ($password !== $confirm) {
+    $error = 'Passwords do not match.';
+} elseif (!isUserUnique($username, $email)) {
+    $error = 'That username or email is already registered.';
 }
 
-/**
- * ============================================
- * @author morshedmilton
- * @task Feature 1: Authentication - Sign-up with Validation
- * @date 2025-12-30
- * ============================================
- */
-?>
+if ($error) {
+    flash('error', $error);
+    redirect('../view/signup.php');
+}
+
+unset($_SESSION['old']);
+$id = createUser($name, $username, $email, $password, $role);
+logActivity("New user registered: $username", $id);
+flash('success', 'Account created! You can sign in now.');
+redirect('../view/login.php');

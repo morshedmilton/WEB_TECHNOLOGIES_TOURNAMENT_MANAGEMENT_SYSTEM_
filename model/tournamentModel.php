@@ -1,166 +1,154 @@
 <?php
+require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/activityModel.php';
 
-require_once('db.php');
-
-function getActiveTournamentCount(){
-    $con = getConnection();
-    $sql = "select count(*) as total from tournaments where status != 'Completed'";
-    $result = mysqli_query($con, $sql);
-    $data = mysqli_fetch_assoc($result);
-    mysqli_close($con);
-    return $data['total'];
+/** Base SELECT: tournament + organizer name + registered team count + rating. */
+function tournamentSelect()
+{
+    return 'SELECT t.*, u.name AS organizer_name, u.username AS organizer_username,
+                   (SELECT COUNT(*) FROM tournament_registrations r WHERE r.tournament_id = t.id) AS team_count,
+                   (SELECT AVG(c.rating) FROM comments c WHERE c.tournament_id = t.id) AS avg_rating,
+                   (SELECT COUNT(*) FROM comments c WHERE c.tournament_id = t.id) AS review_count
+            FROM tournaments t LEFT JOIN users u ON u.id = t.created_by';
 }
 
-function getTodayActivityCount(){
-    $con = getConnection();
-    $sql = "SELECT COUNT(*) as total FROM activity_log WHERE DATE(timestamp) = CURDATE()";
-    $result = mysqli_query($con, $sql);
-    $data = mysqli_fetch_assoc($result);
-    mysqli_close($con);
-    return $data['total'];
+function createTournament($t)
+{
+    return db_insert(
+        'INSERT INTO tournaments (title, category, description, banner_image, status, location, start_date, prize_pool, max_teams, created_by, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [$t['title'], $t['category'], $t['description'], $t['banner_image'], 'Upcoming', $t['location'], $t['start_date'] ?: null,
+         $t['prize_pool'], (int) $t['max_teams'], $t['created_by'], now()]
+    );
 }
 
-function createTournament($tournament){
-    $con = getConnection();
-    $title = mysqli_real_escape_string($con, $tournament['title']);
-    $category = mysqli_real_escape_string($con, $tournament['category']);
-    $desc = mysqli_real_escape_string($con, $tournament['description']);
-    $banner = mysqli_real_escape_string($con, $tournament['banner_image']);
-    $creator = mysqli_real_escape_string($con, $tournament['created_by']);
+function updateTournament($id, $t)
+{
+    return db_exec(
+        'UPDATE tournaments SET title = ?, category = ?, description = ?, status = ?, location = ?, start_date = ?, prize_pool = ?, max_teams = ? WHERE id = ?',
+        [$t['title'], $t['category'], $t['description'], $t['status'], $t['location'], $t['start_date'] ?: null, $t['prize_pool'], (int) $t['max_teams'], $id]
+    );
+}
 
-    $sql = "insert into tournaments (title, category, description, banner_image, status, created_by) 
-            values('$title', '$category', '$desc', '$banner', 'Upcoming', '$creator')";
+function getTournamentById($id)
+{
+    return db_one(tournamentSelect() . ' WHERE t.id = ?', [$id]);
+}
 
-    if (mysqli_query($con, $sql)) {
-        $last_id = mysqli_insert_id($con);
-        mysqli_close($con);
-        return $last_id;
+/** Filterable list. $filters: q, category, status. */
+function searchTournaments($filters = [], $limit = 100)
+{
+    $where = [];
+    $params = [];
+    if (!empty($filters['q'])) {
+        $where[] = '(t.title LIKE ? OR t.category LIKE ? OR t.location LIKE ?)';
+        $like = '%' . $filters['q'] . '%';
+        array_push($params, $like, $like, $like);
     }
-    
-    mysqli_close($con);
-    return false;
-}
-
-function addAttachment($t_id, $name, $path, $type){
-    $con = getConnection();
-    $t_id = mysqli_real_escape_string($con, $t_id);
-    $name = mysqli_real_escape_string($con, $name);
-    $path = mysqli_real_escape_string($con, $path);
-
-    $sql = "insert into attachments (tournament_id, file_name, file_path, file_type) values('$t_id', '$name', '$path', '$type')";
-    
-    $res = mysqli_query($con, $sql);
-    mysqli_close($con);
-    return $res;
-}
-
-function getAttachmentsByTournament($t_id){
-    $con = getConnection();
-    $t_id = mysqli_real_escape_string($con, $t_id);
-    $sql = "select * from attachments where tournament_id = '$t_id'";
-    $result = mysqli_query($con, $sql);
-    $files = [];
-    
-    while ($row = mysqli_fetch_assoc($result)) {
-        array_push($files, $row);
+    if (!empty($filters['category']) && in_array($filters['category'], CATEGORIES, true)) {
+        $where[] = 't.category = ?';
+        $params[] = $filters['category'];
     }
-    
-    mysqli_close($con);
-    return $files;
-}
-
-function logActivity($text){
-    $con = getConnection();
-    $safe_text = mysqli_real_escape_string($con, $text);
-    $sql = "INSERT INTO activity_log (activity_text) VALUES ('$safe_text')";
-    mysqli_query($con, $sql);
-    mysqli_close($con);
-}
-
-function getTournamentById($id){
-    $con = getConnection();
-    $id = mysqli_real_escape_string($con, $id);
-    $sql = "select * from tournaments where id='$id'";
-    $result = mysqli_query($con, $sql);
-    $tournament = mysqli_fetch_assoc($result);
-    mysqli_close($con);
-    return $tournament;
-}
-
-function getAllTournaments(){
-    $con = getConnection();
-    $sql = "select * from tournaments order by id desc";
-    $result = mysqli_query($con, $sql);
-    $tournaments = [];
-    
-    while ($row = mysqli_fetch_assoc($result)) {
-        array_push($tournaments, $row);
+    if (!empty($filters['status']) && in_array($filters['status'], TOURNAMENT_STATUSES, true)) {
+        $where[] = 't.status = ?';
+        $params[] = $filters['status'];
     }
-    
-    mysqli_close($con);
-    return $tournaments;
-}
-
-function updateTournament($tournament){
-    $con = getConnection();
-    $id = mysqli_real_escape_string($con, $tournament['id']);
-    $title = mysqli_real_escape_string($con, $tournament['title']);
-    $category = mysqli_real_escape_string($con, $tournament['category']);
-    $desc = mysqli_real_escape_string($con, $tournament['description']);
-    $status = mysqli_real_escape_string($con, $tournament['status']);
-
-    $sql = "update tournaments set title='$title', category='$category', description='$desc', status='$status' where id='$id'";
-
-    $result = mysqli_query($con, $sql);
-    mysqli_close($con);
-    return $result;
-}
-
-function deleteTournament($id){
-    $con = getConnection();
-    $id = mysqli_real_escape_string($con, $id);
-    $sql = "delete from tournaments where id='$id'";
-    $result = mysqli_query($con, $sql);
-    mysqli_close($con);
-    return $result;
-}
-
-function getAllActivities(){
-    $con = getConnection();
-    $sql = "SELECT * FROM activity_log ORDER BY timestamp DESC";
-    $result = mysqli_query($con, $sql);
-    $logs = [];
-    
-    while ($row = mysqli_fetch_assoc($result)) {
-        array_push($logs, $row);
+    $sql = tournamentSelect();
+    if ($where) {
+        $sql .= ' WHERE ' . implode(' AND ', $where);
     }
-    
-    mysqli_close($con);
-    return $logs;
+    $sql .= " ORDER BY CASE t.status WHEN 'Ongoing' THEN 0 WHEN 'Upcoming' THEN 1 ELSE 2 END, t.start_date DESC, t.id DESC LIMIT " . (int) $limit;
+    return db_all($sql, $params);
 }
 
-function getTournamentsByTeamIDs($teamIds){
-    $con = getConnection();
-    // teamIds is a comma separated string of numbers, basic cleaning
-    $teamIds = mysqli_real_escape_string($con, $teamIds);
+function getFeaturedTournaments($limit = 3)
+{
+    return db_all(tournamentSelect() . " WHERE t.status <> 'Completed' ORDER BY CASE t.status WHEN 'Ongoing' THEN 0 ELSE 1 END, t.id DESC LIMIT " . (int) $limit);
+}
 
-    $sql = "SELECT DISTINCT t.* FROM tournaments t JOIN tournament_registrations tr ON t.id = tr.tournament_id WHERE tr.team_id IN ($teamIds) ORDER BY t.id DESC";
-    $result = mysqli_query($con, $sql);
-    $tournaments = [];
-    
-    while ($row = mysqli_fetch_assoc($result)) {
-        array_push($tournaments, $row);
+function getTournamentsByTeamIDs(array $teamIds)
+{
+    if (!$teamIds) {
+        return [];
     }
-    
-    mysqli_close($con);
-    return $tournaments;
+    $in = implode(',', array_fill(0, count($teamIds), '?'));
+    return db_all(
+        tournamentSelect() . " WHERE t.id IN (SELECT tournament_id FROM tournament_registrations WHERE team_id IN ($in)) ORDER BY t.id DESC",
+        array_values($teamIds)
+    );
 }
 
-/**
- * ============================================
- * @author ShahriyarH10
- * @task Feature 5: Content Management - Tournament CRUD Operations
- * @date 2025-12-26
- * ============================================
- */
-?>
+/** Deleting cascades manually so it works on every MySQL flavour (no FK dependence). */
+function deleteTournament($id)
+{
+    $pdo = db();
+    $pdo->beginTransaction();
+    try {
+        db_exec('DELETE FROM matches WHERE tournament_id = ?', [$id]);
+        db_exec('DELETE FROM tournament_registrations WHERE tournament_id = ?', [$id]);
+        db_exec('DELETE FROM comments WHERE tournament_id = ?', [$id]);
+        db_exec('DELETE FROM attachments WHERE tournament_id = ?', [$id]);
+        $n = db_exec('DELETE FROM tournaments WHERE id = ?', [$id]);
+        $pdo->commit();
+        return $n > 0;
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+}
+
+function addAttachment($tournamentId, $name, $path, $type)
+{
+    return db_insert(
+        'INSERT INTO attachments (tournament_id, file_name, file_path, file_type, uploaded_at) VALUES (?, ?, ?, ?, ?)',
+        [$tournamentId, $name, $path, $type, now()]
+    );
+}
+
+function getAttachmentsByTournament($tournamentId)
+{
+    return db_all('SELECT * FROM attachments WHERE tournament_id = ? ORDER BY id', [$tournamentId]);
+}
+
+/* ---------- Dashboard / report aggregates ---------- */
+
+function getActiveTournamentCount()
+{
+    return (int) db_val("SELECT COUNT(*) FROM tournaments WHERE status <> 'Completed'");
+}
+
+function getSiteTotals()
+{
+    return [
+        'tournaments' => (int) db_val('SELECT COUNT(*) FROM tournaments'),
+        'active' => getActiveTournamentCount(),
+        'teams' => (int) db_val('SELECT COUNT(*) FROM teams'),
+        'players' => (int) db_val("SELECT COUNT(*) FROM users WHERE role = 'Player'"),
+        'matches' => (int) db_val('SELECT COUNT(*) FROM matches'),
+        'finished' => (int) db_val("SELECT COUNT(*) FROM matches WHERE status = 'Finished'"),
+    ];
+}
+
+function countTournamentsByCategory()
+{
+    return db_all('SELECT category AS label, COUNT(*) AS value FROM tournaments GROUP BY category ORDER BY value DESC');
+}
+
+function countTournamentsByStatus()
+{
+    $rows = db_all('SELECT status, COUNT(*) AS total FROM tournaments GROUP BY status');
+    $out = ['Upcoming' => 0, 'Ongoing' => 0, 'Completed' => 0];
+    foreach ($rows as $r) {
+        $out[$r['status']] = (int) $r['total'];
+    }
+    return $out;
+}
+
+function getTopRatedTournaments($limit = 5)
+{
+    return db_all(
+        'SELECT t.id, t.title, t.category, AVG(c.rating) AS avg_rating, COUNT(c.id) AS reviews
+         FROM tournaments t JOIN comments c ON c.tournament_id = t.id
+         GROUP BY t.id, t.title, t.category ORDER BY avg_rating DESC, reviews DESC LIMIT ' . (int) $limit
+    );
+}

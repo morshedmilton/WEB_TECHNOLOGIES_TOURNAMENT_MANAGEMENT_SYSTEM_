@@ -1,29 +1,21 @@
 <?php
-session_start();
-require_once('../model/userModel.php');
-require_once('../model/tournamentModel.php'); // For activity log
+require_once '../model/userModel.php';
+require_once '../model/activityModel.php';
+$admin = require_role('Admin', '../view/');
+require_post('allUser.php');
 
-if (isset($_POST['update_user'])) {
-    $id = $_POST['id'];
-    $role = $_POST['role'];
-    $status = $_POST['status'];
+$id = (int) ($_POST['id'] ?? 0);
+$role = in_array($_POST['role'] ?? '', ROLES, true) ? $_POST['role'] : null;
+$status = in_array($_POST['status'] ?? '', ['Active', 'Blocked'], true) ? $_POST['status'] : null;
+$target = getUserById($id);
 
-    $user = ['id' => $id, 'role' => $role, 'status' => $status];
-
-    if (updateUserAdmin($user)) {
-        // Log if success
-        logActivity("Admin updated User ID: $id (Role: $role, Status: $status)");
-        header('location: ../view/allUser.php?success=updated');
-    } else {
-        header("location: ../view/editUser.php?id=$id&error=db_error");
-    }
+if (!$target || !$role || !$status) {
+    flash('error', 'Invalid request.');
+} elseif ($id === (int) $admin['id'] && ($role !== 'Admin' || $status !== 'Active')) {
+    flash('error', "You can't demote or block your own account.");
+} else {
+    updateUserAdmin($id, $role, $status);
+    logActivity("Admin updated {$target['username']} (Role: $role, Status: $status)");
+    flash('success', 'User updated.');
 }
-
-/**
- * ============================================
- * @author morshedmilton
- * @task Feature 4: User Management - Admin Update User Role and Status
- * @date 2026-01-05
- * ============================================
- */
-?>
+redirect('../view/allUser.php');

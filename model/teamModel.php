@@ -1,116 +1,135 @@
 <?php
-require_once('db.php');
-
-// Create Team [PRD Item 18]
-function createTeam($team)
-{
-    $con = getConnection();
-    $sql = "insert into teams (name, members, created_by) values('{$team['name']}', '{$team['members']}', '{$team['created_by']}')";
-    $status = mysqli_query($con, $sql);
-    mysqli_close($con);
-    return $status;
-}
-
-// View all teams list
-function getAllTeams()
-{
-    $con = getConnection();
-    $sql = "select * from teams";
-    $result = mysqli_query($con, $sql);
-    $teams = [];
-    while ($row = mysqli_fetch_assoc($result)) {
-        array_push($teams, $row);
-    }
-    mysqli_close($con);
-    return $teams;
-}
-
-// Join Tournament (Registration)
-function joinTournament($tournament_id, $team_id)
-{
-    $con = getConnection();
-    $sql = "insert into tournament_registrations (tournament_id, team_id) values('$tournament_id', '$team_id')";
-    $status = mysqli_query($con, $sql);
-    mysqli_close($con);
-    return $status;
-}
-
-// View registered teams for a tournament
-function getRegisteredTeams($tournament_id)
-{
-    $con = getConnection();
-    $sql = "select teams.* from teams 
-            join tournament_registrations on teams.id = tournament_registrations.team_id 
-            where tournament_registrations.tournament_id = '$tournament_id'";
-    $result = mysqli_query($con, $sql);
-    $teams = [];
-    while ($row = mysqli_fetch_assoc($result)) {
-        array_push($teams, $row);
-    }
-    mysqli_close($con);
-    return $teams;
-}
-
-// Get list of teams created by user
-function getTeamsByCreator($username)
-{
-    $con = getConnection();
-    $sql = "select * from teams where created_by='$username'";
-    $result = mysqli_query($con, $sql);
-    $teams = [];
-    while ($row = mysqli_fetch_assoc($result)) {
-        array_push($teams, $row);
-    }
-    mysqli_close($con);
-    return $teams;
-}
-
-// Check if player is registered in system
-function isPlayerRegistered($username)
-{
-    $con = getConnection();
-    $sql = "select * from users where username='$username' and role='Player'";
-    $result = mysqli_query($con, $sql);
-    $status = mysqli_num_rows($result) > 0;
-    mysqli_close($con);
-    return $status;
-}
-
-// Find all teams of the user (as Creator or Member)
-function getMyTeams($username)
-{
-    $con = getConnection();
-    $sql = "SELECT * FROM teams";
-    $result = mysqli_query($con, $sql);
-    $teams = [];
-    while ($row = mysqli_fetch_assoc($result)) {
-        $isMember = false;
-        // If user is the team creator
-        if ($row['created_by'] == $username) {
-            $isMember = true;
-        } else {
-            // Check member list (comma separated string)
-            $members = explode(',', $row['members']);
-            foreach ($members as $m) {
-                if (trim($m) == $username) {
-                    $isMember = true;
-                    break;
-                }
-            }
-        }
-        if ($isMember) {
-            array_push($teams, $row);
-        }
-    }
-    mysqli_close($con);
-    return $teams;
-}
+require_once __DIR__ . '/helpers.php';
 
 /**
- * ============================================
- * @author MdTanjimAhamad
- * @task Feature 6: Team Management - Create Team and Join Tournament
- * @date 2026-01-05
- * ============================================
+ * Create a team and its member rows. $usernames are already validated players.
+ * The creator is always a member.
  */
-?>
+function createTeam($name, $sport, $creatorId, array $memberIds)
+{
+    $pdo = db();
+    $pdo->beginTransaction();
+    try {
+        $teamId = db_insert('INSERT INTO teams (name, sport, created_by, created_at) VALUES (?, ?, ?, ?)', [$name, $sport, $creatorId, now()]);
+        $memberIds = array_unique(array_merge([$creatorId], $memberIds));
+        foreach ($memberIds as $uid) {
+            db_exec('INSERT INTO team_members (team_id, user_id) VALUES (?, ?)', [$teamId, $uid]);
+        }
+        $pdo->commit();
+        return $teamId;
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+}
+
+function teamNameExists($name)
+{
+    return (int) db_val('SELECT COUNT(*) FROM teams WHERE LOWER(name) = LOWER(?)', [$name]) > 0;
+}
+
+function teamSelect()
+{
+    return 'SELECT tm.*, u.name AS creator_name, u.username AS creator_username,
+                   (SELECT COUNT(*) FROM team_members m WHERE m.team_id = tm.id) AS member_count
+            FROM teams tm LEFT JOIN users u ON u.id = tm.created_by';
+}
+
+function getAllTeams($sport = '')
+{
+    if ($sport !== '' && in_array($sport, CATEGORIES, true)) {
+        return db_all(teamSelect() . ' WHERE tm.sport = ? ORDER BY tm.id DESC', [$sport]);
+    }
+    return db_all(teamSelect() . ' ORDER BY tm.id DESC');
+}
+
+function getTeamById($id)
+{
+    return db_one(teamSelect() . ' WHERE tm.id = ?', [$id]);
+}
+
+function getTeamMembers($teamId)
+{
+    return db_all(
+        'SELECT u.id, u.name, u.username, u.profile_picture FROM team_members m JOIN users u ON u.id = m.user_id WHERE m.team_id = ? ORDER BY u.name',
+        [$teamId]
+    );
+}
+
+/** Members of many teams in one query, grouped by team id. */
+function getMembersForTeams(array $teamIds)
+{
+    if (!$teamIds) {
+        return [];
+    }
+    $in = implode(',', array_fill(0, count($teamIds), '?'));
+    $rows = db_all(
+        "SELECT m.team_id, u.id, u.name, u.username, u.profile_picture FROM team_members m JOIN users u ON u.id = m.user_id WHERE m.team_id IN ($in) ORDER BY u.name",
+        array_values($teamIds)
+    );
+    $out = [];
+    foreach ($rows as $r) {
+        $out[$r['team_id']][] = $r;
+    }
+    return $out;
+}
+
+/** Teams the user created or belongs to. */
+function getMyTeams($userId)
+{
+    return db_all(
+        teamSelect() . ' WHERE tm.created_by = ? OR tm.id IN (SELECT team_id FROM team_members WHERE user_id = ?) ORDER BY tm.id DESC',
+        [$userId, $userId]
+    );
+}
+
+function getTeamsByCreator($userId)
+{
+    return db_all(teamSelect() . ' WHERE tm.created_by = ? ORDER BY tm.name', [$userId]);
+}
+
+/** Resolve usernames to player ids. Returns [ids, unknownUsernames]. */
+function resolvePlayers(array $usernames)
+{
+    $ids = [];
+    $unknown = [];
+    foreach ($usernames as $username) {
+        $user = db_one("SELECT id FROM users WHERE username = ? AND role = 'Player' AND status = 'Active'", [$username]);
+        if ($user) {
+            $ids[] = (int) $user['id'];
+        } else {
+            $unknown[] = $username;
+        }
+    }
+    return [$ids, $unknown];
+}
+
+/* ---------- Registrations ---------- */
+
+function isTeamRegistered($tournamentId, $teamId)
+{
+    return (int) db_val('SELECT COUNT(*) FROM tournament_registrations WHERE tournament_id = ? AND team_id = ?', [$tournamentId, $teamId]) > 0;
+}
+
+function joinTournament($tournamentId, $teamId)
+{
+    return db_insert(
+        'INSERT INTO tournament_registrations (tournament_id, team_id, registered_at) VALUES (?, ?, ?)',
+        [$tournamentId, $teamId, now()]
+    );
+}
+
+function leaveTournament($tournamentId, $teamId)
+{
+    return db_exec('DELETE FROM tournament_registrations WHERE tournament_id = ? AND team_id = ?', [$tournamentId, $teamId]);
+}
+
+function getRegisteredTeams($tournamentId)
+{
+    return db_all(
+        'SELECT tm.*, (SELECT COUNT(*) FROM team_members m WHERE m.team_id = tm.id) AS member_count
+         FROM teams tm JOIN tournament_registrations r ON r.team_id = tm.id
+         WHERE r.tournament_id = ? ORDER BY r.id',
+        [$tournamentId]
+    );
+}

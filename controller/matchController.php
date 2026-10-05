@@ -1,50 +1,60 @@
 <?php
-session_start();
-require_once('../model/matchModel.php');
-require_once('../model/tournamentModel.php');
+require_once '../model/matchModel.php';
+require_once '../model/teamModel.php';
+require_once '../model/tournamentModel.php';
+$user = require_login('../view/');
+require_post('tournamentList.php');
+
+$tid = (int) ($_POST['tournament_id'] ?? $_POST['t_id'] ?? 0);
+$t = getTournamentById($tid);
+if (!$t || !can_manage_tournament($t)) {
+    flash('error', 'Only the organiser can manage matches.');
+    redirect('../view/tournamentList.php');
+}
+$back = '../view/detailsTournament.php?id=' . $tid . '#matches';
 
 if (isset($_POST['schedule'])) {
-    $t_id = $_POST['tournament_id'];
-    $team1 = $_POST['team1_id'];
-    $team2 = $_POST['team2_id'];
-    $date = $_POST['match_date'];
-
-    if ($team1 == $team2) {
-        header("location: ../view/manageMatches.php?id=$t_id&error=same_team");
-    } else {
-        $match = [
-            'tournament_id' => $t_id,
-            'team1_id' => $team1,
-            'team2_id' => $team2,
-            'match_date' => $date
-        ];
-        if (scheduleMatch($match)) {
-            logActivity("Match scheduled in Tournament ID: $t_id");
-            header("location: ../view/detailsTournament.php?id=$t_id&success=scheduled");
-        } else {
-            header("location: ../view/manageMatches.php?id=$t_id&error=db_error");
-        }
+    $t1 = (int) ($_POST['team1_id'] ?? 0);
+    $t2 = (int) ($_POST['team2_id'] ?? 0);
+    $date = str_replace('T', ' ', $_POST['match_date'] ?? '');
+    $registered = array_column(getRegisteredTeams($tid), 'id');
+    if ($t1 === $t2) {
+        flash('error', 'Team 1 and Team 2 cannot be the same.');
+        redirect('../view/manageMatches.php?id=' . $tid);
     }
+    if (!in_array($t1, $registered) || !in_array($t2, $registered)) {
+        flash('error', 'Both teams must be registered in this tournament.');
+        redirect('../view/manageMatches.php?id=' . $tid);
+    }
+    if (!strtotime($date)) {
+        flash('error', 'Please choose a valid date and time.');
+        redirect('../view/manageMatches.php?id=' . $tid);
+    }
+    scheduleMatch($tid, $t1, $t2, date('Y-m-d H:i:s', strtotime($date)));
+    logActivity('Match scheduled in ' . $t['title']);
+    flash('success', 'Match scheduled.');
+    redirect($back);
 }
 
 if (isset($_POST['update_result'])) {
-    $m_id = $_POST['match_id'];
-    $t_id = $_POST['t_id'];
-    $winner = $_POST['winner_id'];
-    $status = $_POST['status'];
-
-    if (updateMatchResult($m_id, $winner, $status)) {
-        header("location: ../view/detailsTournament.php?id=$t_id&success=updated");
-    } else {
-        header("location: ../view/updateMatch.php?match_id=$m_id&error=db_error");
+    $mid = (int) ($_POST['match_id'] ?? 0);
+    $m = getMatchById($mid);
+    if (!$m || (int) $m['tournament_id'] !== $tid) {
+        redirect($back);
     }
+    $status = in_array($_POST['status'] ?? '', MATCH_STATUSES, true) ? $_POST['status'] : 'Scheduled';
+    updateMatchResult($mid, max(0, (int) ($_POST['score1'] ?? 0)), max(0, (int) ($_POST['score2'] ?? 0)), $status);
+    logActivity('Result updated: ' . $t['title']);
+    flash('success', 'Result saved.');
+    redirect($back);
 }
 
-/**
- * ============================================
- * @author MdTanjimAhamad
- * @task Feature 6: Match Controller - Schedule Match and Update Results
- * @date 2026-01-09
- * ============================================
- */
-?>
+if (isset($_POST['delete_match'])) {
+    $mid = (int) ($_POST['match_id'] ?? 0);
+    $m = getMatchById($mid);
+    if ($m && (int) $m['tournament_id'] === $tid) {
+        deleteMatch($mid);
+        flash('success', 'Match deleted.');
+    }
+}
+redirect($back);

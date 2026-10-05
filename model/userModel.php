@@ -1,130 +1,98 @@
 <?php
-require_once('db.php');
+require_once __DIR__ . '/helpers.php';
 
-function signup($user)
+function createUser($name, $username, $email, $password, $role = 'Player')
 {
-    $con = getConnection();
-    $name = mysqli_real_escape_string($con, $user['name']);
-    $username = mysqli_real_escape_string($con, $user['username']);
-    $email = mysqli_real_escape_string($con, $user['email']);
-    $password = mysqli_real_escape_string($con, $user['password']);
-
-    $sql = "insert into users (name, username, email, password, role, status) 
-            values('$name', '$username', '$email', '$password', 'Player', 'Active')";
-
-    $result = mysqli_query($con, $sql);
-    mysqli_close($con);
-    return $result;
+    return db_insert(
+        'INSERT INTO users (name, username, email, password_hash, role, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [$name, $username, $email, password_hash($password, PASSWORD_DEFAULT), $role, 'Active', now()]
+    );
 }
 
-function login($username, $password)
+/** Returns the user row on success, false on bad credentials, null if the account is blocked. */
+function authenticate($identifier, $password)
 {
-    $con = getConnection();
-    $username = mysqli_real_escape_string($con, $username);
-    $password = mysqli_real_escape_string($con, $password);
-
-    $sql = "select * from users where username='$username' and password='$password' and status='Active'";
-    $result = mysqli_query($con, $sql);
-    $count = mysqli_num_rows($result);
-
-    if ($count == 1) {
-        $user = mysqli_fetch_assoc($result);
-        mysqli_close($con);
-        return $user;
-    } else {
-        mysqli_close($con);
+    $user = db_one('SELECT * FROM users WHERE username = ? OR email = ?', [$identifier, $identifier]);
+    if (!$user || !password_verify($password, $user['password_hash'])) {
         return false;
     }
-}
-
-function isUnique($username, $email)
-{
-    $con = getConnection();
-    $username = mysqli_real_escape_string($con, $username);
-    $email = mysqli_real_escape_string($con, $email);
-
-    $sql = "select * from users where username='$username' or email='$email'";
-    $result = mysqli_query($con, $sql);
-    $count = mysqli_num_rows($result);
-    mysqli_close($con);
-    return $count == 0;
-}
-
-function getUserByUsername($username)
-{
-    $con = getConnection();
-    $username = mysqli_real_escape_string($con, $username);
-    $sql = "select * from users where username='$username'";
-    $result = mysqli_query($con, $sql);
-    $user = mysqli_fetch_assoc($result);
-    mysqli_close($con);
+    if ($user['status'] !== 'Active') {
+        return null;
+    }
+    if (password_needs_rehash($user['password_hash'], PASSWORD_DEFAULT)) {
+        db_exec('UPDATE users SET password_hash = ? WHERE id = ?', [password_hash($password, PASSWORD_DEFAULT), $user['id']]);
+    }
     return $user;
 }
 
-function getAllUsers()
+function isUserUnique($username, $email)
 {
-    $con = getConnection();
-    $sql = "select * from users";
-    $result = mysqli_query($con, $sql);
-    $users = [];
-    while ($row = mysqli_fetch_assoc($result)) {
-        array_push($users, $row);
-    }
-    mysqli_close($con);
-    return $users;
+    return (int) db_val('SELECT COUNT(*) FROM users WHERE username = ? OR email = ?', [$username, $email]) === 0;
 }
 
-function updateUserAdmin($user)
+function emailTakenByOther($email, $userId)
 {
-    $con = getConnection();
-    $id = mysqli_real_escape_string($con, $user['id']);
-    $role = mysqli_real_escape_string($con, $user['role']);
-    $status = mysqli_real_escape_string($con, $user['status']);
-
-    $sql = "update users set role='$role', status='$status' where id='$id'";
-    $status = mysqli_query($con, $sql);
-    mysqli_close($con);
-    return $status;
+    return (int) db_val('SELECT COUNT(*) FROM users WHERE email = ? AND id <> ?', [$email, $userId]) > 0;
 }
 
 function getUserById($id)
 {
-    $con = getConnection();
-    $id = mysqli_real_escape_string($con, $id);
-    $sql = "select * from users where id='$id'";
-    $result = mysqli_query($con, $sql);
-    $user = mysqli_fetch_assoc($result);
-    mysqli_close($con);
-    return $user;
+    return db_one('SELECT * FROM users WHERE id = ?', [$id]);
+}
+
+function getUserByEmail($email)
+{
+    return db_one('SELECT * FROM users WHERE email = ?', [$email]);
+}
+
+function getAllUsers($search = '')
+{
+    if ($search !== '') {
+        $like = '%' . $search . '%';
+        return db_all('SELECT * FROM users WHERE name LIKE ? OR username LIKE ? OR email LIKE ? ORDER BY id', [$like, $like, $like]);
+    }
+    return db_all('SELECT * FROM users ORDER BY id');
+}
+
+function updateUserAdmin($id, $role, $status)
+{
+    return db_exec('UPDATE users SET role = ?, status = ? WHERE id = ?', [$role, $status, $id]);
+}
+
+function updateProfile($id, $name, $email)
+{
+    return db_exec('UPDATE users SET name = ?, email = ? WHERE id = ?', [$name, $email, $id]);
 }
 
 function updateProfilePicture($id, $filename)
 {
-    $con = getConnection();
-    $id = mysqli_real_escape_string($con, $id);
-    $filename = mysqli_real_escape_string($con, $filename);
-    $sql = "UPDATE users SET profile_picture='$filename' WHERE id='$id'";
-    $result = mysqli_query($con, $sql);
-    mysqli_close($con);
-    return $result;
+    return db_exec('UPDATE users SET profile_picture = ? WHERE id = ?', [$filename, $id]);
 }
 
 function updatePassword($id, $newPassword)
 {
-    $con = getConnection();
-    $id = mysqli_real_escape_string($con, $id);
-    $newPassword = mysqli_real_escape_string($con, $newPassword);
-    $sql = "UPDATE users SET password='$newPassword' WHERE id='$id'";
-    $result = mysqli_query($con, $sql);
-    mysqli_close($con);
-    return $result;
+    return db_exec('UPDATE users SET password_hash = ? WHERE id = ?', [password_hash($newPassword, PASSWORD_DEFAULT), $id]);
 }
 
-/**
- * ============================================
- * @author morshedmilton
- * @task Feature 1: Authentication - User Model with Login/Signup/Password functions
- * @date 2025-12-28
- * ============================================
- */
-?>
+function countUsersByRole()
+{
+    $rows = db_all('SELECT role, COUNT(*) AS total FROM users GROUP BY role');
+    $out = ['Admin' => 0, 'Organizer' => 0, 'Player' => 0];
+    foreach ($rows as $r) {
+        $out[$r['role']] = (int) $r['total'];
+    }
+    return $out;
+}
+
+function saveContactMessage($name, $email, $subject, $message)
+{
+    return db_insert(
+        'INSERT INTO contact_messages (name, email, subject, message, created_at) VALUES (?, ?, ?, ?, ?)',
+        [$name, $email, $subject, $message, now()]
+    );
+}
+
+function getContactMessages()
+{
+    return db_all('SELECT * FROM contact_messages ORDER BY id DESC LIMIT 50');
+}

@@ -1,53 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <title>FAQ - Tournament Management System</title>
-    <link rel="stylesheet" href="../asset/css/style.css">
-</head>
-
-<body>
-
-    <fieldset style="width: 700px; margin: 50px auto;">
-        <legend>Frequently Asked Questions (FAQ)</legend>
-
-        <div style="text-align: center; margin-bottom: 20px;">
-            <a href="login.php" style="display: inline;">Back to Home</a> |
-            <a href="contact.php" style="display: inline;">Contact Support</a>
-        </div>
-
-        <div style="padding: 10px; line-height: 1.6;">
-            <h3 style="color: #333;">1. How do I create a tournament?</h3>
-            <p>If you are a registered user/organizer, go to your Dashboard and click on "Create New Tournament". Fill
-                out the form and click save.</p>
-
-            <h3 style="color: #333;">2. Can I participate in multiple tournaments?</h3>
-            <p>Yes, as long as you are a registered user, you can browse through the tournament list and join any
-                upcoming event.</p>
-
-            <h3 style="color: #333;">3. How can I reset my password?</h3>
-            <p>Click on the "Forgot Password" link on the Login page and enter your email address to receive
-                instructions.</p>
-
-            <h3 style="color: #333;">4. What should I do if I find an error?</h3>
-            <p>Please use our "Contact Us" page to send a detailed message to the system administrator.</p>
-        </div>
-
-        <hr>
-        <div style="text-align: center; padding: 10px;">
-            <p>Still have questions? <a href="contact.php" style="display: inline;">Send us a message!</a></p>
-        </div>
-    </fieldset>
-
-</body>
-
-</html>
-
-<!--
-============================================
-@author CodewithTonmoy
-@task Feature 18: Help and FAQ - Frequently Asked Questions
-@date 2026-01-19
-============================================
--->
+<?php
+require_once '../model/helpers.php';
+$pageTitle = 'Help & FAQ';
+include 'partials/header.php';
+$faqs = [
+    ['How do I create a tournament?', 'Sign in with an Organizer or Admin account, open Tournaments and click “New tournament”. Add the sport, venue, dates and a description, then publish. You can attach a banner and rulebook too.'],
+    ['How does a team join a tournament?', 'Create a team for the right sport, then open the tournament page and use “Register your team”. Only the team captain can register or withdraw, and a team can enter any tournament of its own sport while slots remain.'],
+    ['How are standings calculated?', 'The league table is computed live from finished matches: 3 points for a win, 1 for a draw, 0 for a loss. Ties are broken by score difference, then team name.'],
+    ['Who can update match results?', 'The tournament organiser and platform admins. Open the Matches tab, choose “Update result”, enter the scores and mark the match Finished.'],
+    ['Can I participate in multiple tournaments?', 'Yes. Use the same team, or create more teams. One team can be registered in many tournaments at once.'],
+    ['I forgot my password.', 'Use “Forgot password” on the sign-in page. If you are signed in, you can change your password from your profile.'],
+    ['Where is my data stored?', 'In a managed cloud MySQL database over an encrypted TLS connection. Passwords are stored as salted bcrypt hashes, never in plain text.'],
+];
+?>
+<main class="container" style="max-width:820px">
+    <div class="page-head"><div><h1>Help &amp; FAQ</h1><p>Quick answers to the most common questions.</p></div></div>
+    <div class="faq">
+        <?php foreach ($faqs as $i => $f): ?>
+            <details <?= $i === 0 ? 'open' : '' ?>><summary><?= e($f[0]) ?></summary><p><?= e($f[1]) ?></p></details>
+        <?php endforeach; ?>
+    </div>
+    <p class="center muted mt-3">Still stuck? <a href="contact.php">Send us a message</a>.</p>
+</main>
+<?php include 'partials/footer.php'; ?>

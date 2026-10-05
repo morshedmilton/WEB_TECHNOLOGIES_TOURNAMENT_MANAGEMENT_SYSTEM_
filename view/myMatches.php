@@ -1,140 +1,62 @@
 <?php
-session_start();
-require_once('../model/teamModel.php');
-require_once('../model/tournamentModel.php');
-require_once('../model/matchModel.php');
-
-if (!isset($_COOKIE['status'])) {
-    header('location: login.php');
-    exit();
-}
-
-$username = $_SESSION['username'];
-
-// 1. Find all teams of the user
-$myTeams = getMyTeams($username);
-$teamIds = [];
-foreach ($myTeams as $team) {
-    $teamIds[] = $team['id'];
-}
-
-$myTournaments = [];
-$myMatches = [];
-
-// 2. If teams exist, then search for tournaments and matches
-if (!empty($teamIds)) {
-    $idsString = implode(',', $teamIds);
-    $myTournaments = getTournamentsByTeamIDs($idsString);
-    $myMatches = getMatchesByTeamIDs($idsString);
-}
+require_once '../model/teamModel.php';
+require_once '../model/tournamentModel.php';
+require_once '../model/matchModel.php';
+$user = require_login();
+$myTeams = getMyTeams($user['id']);
+$teamIds = array_column($myTeams, 'id');
+$myTournaments = getTournamentsByTeamIDs($teamIds);
+$myMatches = getMatchesByTeamIDs($teamIds);
+$upcoming = array_filter($myMatches, function ($m) { return $m['status'] !== 'Finished'; });
+$finished = array_filter($myMatches, function ($m) { return $m['status'] === 'Finished'; });
+$wins = count(array_filter($finished, function ($m) use ($teamIds) { return in_array($m['winner_id'], $teamIds); }));
+$active = 'matches';
+$pageTitle = 'My matches';
+include 'partials/header.php';
 ?>
+<main class="container">
+    <div class="page-head"><div><h1>My matches</h1><p>Your teams, tournaments and fixtures in one view.</p></div>
+        <a class="btn btn-ghost" href="createTeam.php"><?= icon('plus') ?> Create team</a></div>
 
-<!DOCTYPE html>
-<html>
+    <div class="grid grid-4">
+        <?= stat_tile('users', 'indigo', count($myTeams), 'My teams') ?>
+        <?= stat_tile('trophy', 'amber', count($myTournaments), 'Tournaments joined') ?>
+        <?= stat_tile('calendar', 'blue', count($upcoming), 'Upcoming matches') ?>
+        <?= stat_tile('award', 'green', $wins . '/' . count($finished), 'Wins') ?>
+    </div>
 
-<head>
-    <title>My Matches & Tournaments</title>
-    <link rel="stylesheet" href="../asset/css/style.css">
-</head>
-
-<body>
-    <fieldset style="width: 850px; margin: 30px auto;">
-        <legend>My Activity Log</legend>
-        <div style="text-align: center;">
-            <a href="home.php">Dashboard</a> |
-            <a href="tournamentList.php">All Tournaments</a>
+    <div class="grid grid-main mt-3">
+        <div class="stack">
+            <div class="card">
+                <div class="card-head"><h2>Upcoming &amp; live</h2></div>
+                <?php foreach (array_reverse($upcoming) as $m): echo match_row($m, $teamIds); endforeach; ?>
+                <?php if (!$upcoming): ?><?= empty_state('calendar', 'No upcoming matches', 'Join a tournament to see your fixtures here.') ?><?php endif; ?>
+            </div>
+            <div class="card">
+                <div class="card-head"><h2>Results</h2></div>
+                <?php foreach ($finished as $m): echo match_row($m, $teamIds); endforeach; ?>
+                <?php if (!$finished): ?><p class="muted mb-0">No finished matches yet.</p><?php endif; ?>
+            </div>
         </div>
-        <hr>
-
-        <h3>My Registered Tournaments</h3>
-        <?php if (count($myTournaments) > 0): ?>
-            <table border="1" cellspacing="0" cellpadding="8" style="width: 100%; text-align: center;">
-                <tr style="background-color: #eee;">
-                    <th>ID</th>
-                    <th>Tournament Title</th>
-                    <th>Category</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
+        <aside class="stack">
+            <div class="card">
+                <div class="card-head"><h3>My tournaments</h3></div>
                 <?php foreach ($myTournaments as $t): ?>
-                    <tr>
-                        <td>
-                            <?php echo $t['id']; ?>
-                        </td>
-                        <td>
-                            <?php echo $t['title']; ?>
-                        </td>
-                        <td>
-                            <?php echo $t['category']; ?>
-                        </td>
-                        <td>
-                            <?php
-                            if ($t['status'] == 'Upcoming')
-                                echo '<span style="color: blue;">Upcoming</span>';
-                            elseif ($t['status'] == 'Ongoing')
-                                echo '<span style="color: green;">Ongoing</span>';
-                            else
-                                echo '<span style="color: red;">Completed</span>';
-                            ?>
-                        </td>
-                        <td><a href="detailsTournament.php?id=<?php echo $t['id']; ?>">View Details</a></td>
-                    </tr>
+                    <a class="list-item" href="detailsTournament.php?id=<?= (int) $t['id'] ?>" style="color:inherit">
+                        <span class="stat-icon tone-indigo" style="width:40px;height:40px;font-size:1.2rem"><?= icon(category_meta($t['category'])['icon'], 20) ?></span>
+                        <div style="min-width:0"><strong><?= e($t['title']) ?></strong><div><?= status_badge($t['status']) ?></div></div>
+                    </a>
                 <?php endforeach; ?>
-            </table>
-        <?php else: ?>
-            <p style="text-align: center; color: gray;">You haven't joined any tournaments yet.</p>
-        <?php endif; ?>
-
-        <hr>
-
-        <h3>My Match Schedule</h3>
-        <?php if (count($myMatches) > 0): ?>
-            <table border="1" cellspacing="0" cellpadding="8" style="width: 100%; text-align: center;">
-                <tr style="background-color: #e0f7fa;">
-                    <th>Date</th>
-                    <th>Tournament</th>
-                    <th>Match</th>
-                    <th>Status</th>
-                    <th>Result/Winner</th>
-                </tr>
-                <?php foreach ($myMatches as $m): ?>
-                    <tr>
-                        <td>
-                            <?php echo date('M d, h:i A', strtotime($m['match_date'])); ?>
-                        </td>
-                        <td>
-                            <?php echo $m['tournament_title']; ?>
-                        </td>
-                        <td>
-                            <?php
-                            // Highlight own team
-                            $t1 = in_array($m['team1_id'], $teamIds) ? "<b>{$m['team1_name']} (You)</b>" : $m['team1_name'];
-                            $t2 = in_array($m['team2_id'], $teamIds) ? "<b>{$m['team2_name']} (You)</b>" : $m['team2_name'];
-                            echo "$t1 vs $t2";
-                            ?>
-                        </td>
-                        <td>
-                            <?php echo $m['status']; ?>
-                        </td>
-                        <td style="font-weight: bold; color: green;">
-                            <?php echo $m['winner_name'] ? $m['winner_name'] : "TBD"; ?>
-                        </td>
-                    </tr>
+                <?php if (!$myTournaments): ?><p class="muted small mb-0">You haven't joined any tournaments yet. <a href="tournamentList.php">Browse tournaments</a>.</p><?php endif; ?>
+            </div>
+            <div class="card">
+                <div class="card-head"><h3>My teams</h3></div>
+                <?php foreach ($myTeams as $tm): ?>
+                    <div class="list-item"><?= crest($tm['name'], 38) ?><div><strong><?= e($tm['name']) ?></strong><div class="muted small"><?= e($tm['sport']) ?></div></div></div>
                 <?php endforeach; ?>
-            </table>
-        <?php else: ?>
-            <p style="text-align: center; color: gray;">No scheduled matches found for your teams.</p>
-        <?php endif; ?>
-
-    </fieldset>
-</body>
-
-</html>
-
-<!--
-============================================
-@author MdTanjimAhamad
-@task Feature 6: Match Management - My Matches and Tournaments View
-@date 2026-01-11
-============================================
--->
+                <?php if (!$myTeams): ?><p class="muted small mb-0">No teams yet.</p><?php endif; ?>
+            </div>
+        </aside>
+    </div>
+</main>
+<?php include 'partials/footer.php'; ?>

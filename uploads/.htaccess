@@ -1,0 +1,6 @@
+# User uploads must never execute as code.
+php_flag engine off
+RemoveHandler .php .phtml .php3 .php5
+<FilesMatch "\.(php|phtml|php\d)$">
+    Require all denied
+</FilesMatch>

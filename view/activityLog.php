@@ -1,69 +1,26 @@
 <?php
-session_start();
-require_once('../model/tournamentModel.php');
-
-// Security Check: Only Admin can access
-if (!isset($_COOKIE['status']) || $_SESSION['role'] !== 'Admin') {
-    header('location: home.php?error=unauthorized');
-    exit();
-}
-
-$logs = getAllActivities();
+require_once '../model/activityModel.php';
+$user = require_role('Admin');
+$logs = getRecentActivities(100);
+$active = 'activity';
+$pageTitle = 'Activity log';
+include 'partials/header.php';
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <title>System Activity Logs</title>
-    <link rel="stylesheet" href="../asset/css/style.css">
-</head>
-
-<body>
-    <fieldset style="width: 800px; margin: 30px auto;">
-        <legend>System Audit Trail / Activity Logs</legend>
-
-        <div style="text-align: center; margin-bottom: 20px;">
-            <a href="home.php" style="display: inline;">Dashboard</a> |
-            <a href="allUser.php" style="display: inline;">User Management</a>
-        </div>
-
-        <table border="1" cellspacing="0" cellpadding="10" style="width: 100%; text-align: left;">
-            <thead>
-                <tr style="background-color: #f2f2f2; text-align: center;">
-                    <th>ID</th>
-                    <th>Activity Description</th>
-                    <th>Timestamp</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (count($logs) > 0): ?>
-                    <?php foreach ($logs as $log): ?>
-                        <tr>
-                            <td style="text-align: center;"><?php echo $log['id']; ?></td>
-                            <td><?php echo $log['activity_text']; ?></td>
-                            <td style="text-align: center; font-size: 14px;">
-                                <?php echo date('M d, Y - h:i A', strtotime($log['timestamp'])); ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <tr>
-                        <td colspan="3" style="text-align: center;">No activities recorded yet!</td>
-                    </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </fieldset>
-</body>
-
-</html>
-
-<!--
-============================================
-@author CodewithTonmoy
-@task Feature 13: Activity Log - Audit Trail Viewer
-@date 2026-01-17
-============================================
--->
+<main class="container">
+    <div class="page-head"><div><h1>Activity log</h1><p>Audit trail of the 100 most recent actions on the platform.</p></div></div>
+    <div class="card">
+        <?php if ($logs): ?>
+            <ul class="timeline">
+                <?php foreach ($logs as $log): ?>
+                    <li>
+                        <div class="row row-between wrap">
+                            <span><?= e($log['activity_text']) ?></span>
+                            <span class="muted small"><?php if ($log['user_name']): ?>@<?= e($log['username']) ?> · <?php endif; ?><?= e(fmt_date($log['created_at'], 'M j, g:i A')) ?> (<?= e(time_ago($log['created_at'])) ?>)</span>
+                        </div>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php else: ?><?= empty_state('file-text', 'No activity recorded yet') ?><?php endif; ?>
+    </div>
+</main>
+<?php include 'partials/footer.php'; ?>

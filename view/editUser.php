@@ -1,62 +1,29 @@
 <?php
-session_start();
-require_once('../model/userModel.php');
-if (!isset($_COOKIE['status']) || $_SESSION['role'] !== 'Admin') {
-    header('location: home.php');
-    exit();
+require_once '../model/userModel.php';
+$admin = require_role('Admin');
+$u = getUserById((int) ($_GET['id'] ?? 0));
+if (!$u) {
+    flash('error', 'User not found.');
+    redirect('allUser.php');
 }
-
-if (isset($_GET['id'])) {
-    $user = getUserById($_GET['id']);
-}
+$active = 'users';
+$pageTitle = 'Manage ' . $u['username'];
+include 'partials/header.php';
 ?>
-<!DOCTYPE html>
-<html>
-
-<head>
-    <title>Edit User Role/Status</title>
-    <link rel="stylesheet" href="../asset/css/style.css">
-</head>
-
-<body>
-    <form method="post" action="../controller/adminController.php">
-        <fieldset style="width: 400px; margin: 50px auto;">
-            <legend>Edit User: <?php echo $user['username']; ?></legend>
-            <div style="text-align: center;"><a href="allUser.php">Back to List</a></div>
-            <hr>
-            <input type="hidden" name="id" value="<?php echo $user['id']; ?>">
-
-            Name: <strong><?php echo $user['name']; ?></strong><br><br>
-
-            Role:
-            <select name="role" style="width: 100%;">
-                <option value="Admin" <?php if ($user['role'] == 'Admin')
-                    echo 'selected'; ?>>Admin</option>
-                <option value="Organizer" <?php if ($user['role'] == 'Organizer')
-                    echo 'selected'; ?>>Organizer</option>
-                <option value="Player" <?php if ($user['role'] == 'Player')
-                    echo 'selected'; ?>>Player</option>
-            </select><br><br>
-
-            Status:
-            <select name="status" style="width: 100%;">
-                <option value="Active" <?php if ($user['status'] == 'Active')
-                    echo 'selected'; ?>>Active</option>
-                <option value="Blocked" <?php if ($user['status'] == 'Blocked')
-                    echo 'selected'; ?>>Blocked</option>
-            </select><br><br>
-
-            <input type="submit" name="update_user" value="Update User">
-        </fieldset>
-    </form>
-</body>
-
-</html>
-
-<!--
-============================================
-@author morshedmilton
-@task Feature 4: User Management - Edit User Role and Status Form
-@date 2026-01-05
-============================================
--->
+<main class="container">
+    <div class="crumbs"><a href="allUser.php">Users</a> / <?= e($u['username']) ?></div>
+    <div class="page-head"><div><h1>Manage user</h1></div></div>
+    <div class="card" style="max-width:520px">
+        <div class="row" style="margin-bottom:22px"><?= avatar_html($u['name'], $u['profile_picture'], 56) ?><div><strong><?= e($u['name']) ?></strong><div class="muted small">@<?= e($u['username']) ?> · <?= e($u['email']) ?></div></div></div>
+        <form method="post" action="../controller/adminController.php">
+            <?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $u['id'] ?>">
+            <div class="field"><label for="role">Role</label>
+                <select class="input" name="role" id="role"><?php foreach (ROLES as $r): ?><option <?= $u['role'] === $r ? 'selected' : '' ?>><?= e($r) ?></option><?php endforeach; ?></select></div>
+            <div class="field"><label for="status">Account status</label>
+                <select class="input" name="status" id="status"><?php foreach (['Active', 'Blocked'] as $s): ?><option <?= $u['status'] === $s ? 'selected' : '' ?>><?= e($s) ?></option><?php endforeach; ?></select>
+                <div class="hint">Blocked users can no longer sign in.</div></div>
+            <div class="row"><button class="btn btn-primary btn-lg" type="submit" name="update_user" value="1">Save changes</button><a class="btn btn-ghost btn-lg" href="allUser.php">Cancel</a></div>
+        </form>
+    </div>
+</main>
+<?php include 'partials/footer.php'; ?>

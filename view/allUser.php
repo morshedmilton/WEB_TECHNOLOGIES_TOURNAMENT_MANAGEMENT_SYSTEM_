@@ -1,61 +1,37 @@
 <?php
-session_start();
-require_once('../model/userModel.php');
-
-// Security Check: Only Admin can access
-if (!isset($_COOKIE['status']) || $_SESSION['role'] !== 'Admin') {
-    header('location: home.php?error=unauthorized');
-}
-
-$users = getAllUsers();
+require_once '../model/userModel.php';
+$user = require_role('Admin');
+$q = trim($_GET['q'] ?? '');
+$users = getAllUsers($q);
+$counts = countUsersByRole();
+$active = 'users';
+$pageTitle = 'User management';
+include 'partials/header.php';
 ?>
-
-<!DOCTYPE html>
-<html>
-
-<head>
-    <title>User Management</title>
-    <link rel="stylesheet" href="../asset/css/style.css">
-</head>
-
-<body>
-    <fieldset style="width: 800px; margin: 30px auto;">
-        <legend>System User List</legend>
-        <div style="text-align: center;"><a href="home.php">Back to Dashboard</a></div>
-        <br>
-        <table border="1" cellspacing="0" cellpadding="10" style="width: 100%; text-align: center;">
-            <tr style="background-color: #f2f2f2;">
-                <th>ID</th>
-                <th>Name</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-            <?php foreach ($users as $u) { ?>
-                <tr>
-                    <td><?= $u['id'] ?></td>
-                    <td><?= $u['name'] ?></td>
-                    <td><?= $u['username'] ?></td>
-                    <td><?= $u['email'] ?></td>
-                    <td><?= $u['role'] ?></td>
-                    <td><?= $u['status'] ?></td>
-                    <td>
-                        <a href="editUser.php?id=<?= $u['id'] ?>" style="display: inline;">Change Role/Status</a>
-                    </td>
-                </tr>
-            <?php } ?>
-        </table>
-    </fieldset>
-</body>
-
-</html>
-
-<!--
-============================================
-@author morshedmilton
-@task Feature 4: User Management - Admin User List Table
-@date 2026-01-04
-============================================
--->
+<main class="container">
+    <div class="page-head">
+        <div><h1>Users</h1><p><?= array_sum($counts) ?> accounts · <?= $counts['Organizer'] ?> organisers · <?= $counts['Player'] ?> players</p></div>
+        <form method="get" class="searchbar" style="max-width:340px"><input class="input" type="search" name="q" value="<?= e($q) ?>" placeholder="Search name, username, email…"></form>
+    </div>
+    <div class="card card-flush">
+        <div class="table-wrap">
+            <table class="table">
+                <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th></th></tr></thead>
+                <tbody>
+                <?php foreach ($users as $u): ?>
+                    <tr>
+                        <td><div class="row"><?= avatar_html($u['name'], $u['profile_picture'], 36) ?><div><strong><?= e($u['name']) ?></strong><div class="muted small">@<?= e($u['username']) ?></div></div></div></td>
+                        <td><?= e($u['email']) ?></td>
+                        <td><?= status_badge($u['role']) ?></td>
+                        <td><?= status_badge($u['status']) ?></td>
+                        <td class="muted"><?= e(fmt_date($u['created_at'])) ?></td>
+                        <td class="right"><a class="btn btn-ghost btn-sm" href="editUser.php?id=<?= (int) $u['id'] ?>">Manage</a></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php if (!$users): ?><?= empty_state('search', 'No users match your search') ?><?php endif; ?>
+    </div>
+</main>
+<?php include 'partials/footer.php'; ?>

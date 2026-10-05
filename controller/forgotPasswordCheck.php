@@ -1,35 +1,15 @@
 <?php
-session_start();
-require_once('../model/userModel.php');
+require_once '../model/userModel.php';
+require_post('forgotPassword.php');
 
-if (isset($_POST['submit'])) {
-    $email = trim($_POST['email']);
-
-    if ($email == "") {
-        echo "<script>alert('Please enter your email!'); window.location.href='../view/forgotPassword.php';</script>";
-    } else {
-        // Simple verification that email exists (Basic Logic)
-        $con = getConnection();
-        $safe_email = mysqli_real_escape_string($con, $email);
-        $sql = "SELECT * FROM users WHERE email='$safe_email'";
-        $result = mysqli_query($con, $sql);
-
-        if (mysqli_num_rows($result) > 0) {
-            // Simulation of email sending
-            echo "<script>alert('A reset link has been sent to your email (Simulated)!'); window.location.href='../view/login.php';</script>";
-        } else {
-            echo "<script>alert('Email not found!'); window.location.href='../view/forgotPassword.php';</script>";
-        }
-    }
-} else {
-    header('location: ../view/forgotPassword.php');
+$email = trim($_POST['email'] ?? '');
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    flash('error', 'Please enter a valid email address.');
+    redirect('../view/forgotPassword.php');
 }
 
-/**
- * ============================================
- * @author morshedmilton
- * @task Feature 1: Authentication - Forgot Password with Email Simulation
- * @date 2026-01-02
- * ============================================
- */
-?>
+// Do not reveal whether the address exists (prevents account enumeration).
+// Mail delivery is intentionally stubbed in this demo build.
+getUserByEmail($email);
+flash('success', 'If that email is registered, a reset link is on its way.');
+redirect('../view/login.php');

@@ -1,98 +1,71 @@
-
-
-
-
-
 <?php
+require_once '../model/tournamentModel.php';
+$user = require_login();
 
-session_start();
+$filters = [
+    'q' => trim($_GET['q'] ?? ''),
+    'category' => $_GET['category'] ?? '',
+    'status' => $_GET['status'] ?? '',
+];
+$tournaments = searchTournaments($filters);
 
-require_once('../model/tournamentModel.php');
+// AJAX live search asks for just the results grid.
+function render_results($tournaments)
+{
+    if (!$tournaments) {
+        return empty_state('search', 'No tournaments found', 'Try a different search or clear the filters.');
+    }
+    $html = '<div class="grid grid-3">';
+    foreach ($tournaments as $t) {
+        $html .= tournament_card($t);
+    }
+    return $html . '</div>';
+}
 
-if (!isset($_COOKIE['status'])) {
-    header('location: login.php');
+require_once 'partials/components.php';
+if (isset($_GET['partial'])) {
+    echo '<p class="muted small" style="margin-bottom:14px">' . count($tournaments) . ' tournament' . (count($tournaments) === 1 ? '' : 's') . '</p>';
+    echo render_results($tournaments);
     exit();
 }
 
-$tournaments = getAllTournaments();
-
-// Get logged in user's information
-$currentUser = $_SESSION['username'];
-$userRole = isset($_SESSION['role']) ? $_SESSION['role'] : 'Player';
-
+$canHost = in_array($user['role'], ['Admin', 'Organizer'], true);
+$active = 'tournaments';
+$pageTitle = 'Tournaments';
+include 'partials/header.php';
 ?>
-
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Tournament List</title>
-    <link rel="stylesheet" href="../asset/css/style.css">
-    <script src="../asset/js/ajax.js"></script>
-    <script src="../asset/js/validation.js"></script>
-</head>
-
-<body>
-    <fieldset style="width: 950px; margin: 30px auto;">
-        <legend>Tournaments</legend>
-        <div style="text-align: center;"><a href="home.php">Dashboard</a> | <a href="createTournament.php">Create
-                New</a></div>
-        <hr>
-
-        <div style="text-align: center; margin-bottom: 20px;">
-            <input type="text" id="search_box" placeholder="Live Search Tournament by Name..."
-                onkeyup="searchTournament()" style="width: 60%; padding: 10px; border: 2px solid #000;">
+<main class="container">
+    <div class="page-head">
+        <div>
+            <h1>Tournaments</h1>
+            <p>Discover, join and follow competitions across every sport.</p>
         </div>
+        <?php if ($canHost): ?><a class="btn btn-primary" href="createTournament.php"><?= icon('plus') ?> New tournament</a><?php endif; ?>
+    </div>
 
-        <div id="search_results"></div>
-
-        <table id="main_tournament_table" border="1" cellspacing="0" cellpadding="10" style="width: 100%; text-align: center;">
-            
-            <tr style="background-color: #f2f2f2;">
-                <th>ID</th>
-                <th>Banner</th>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Status</th>
-                <th>Created By</th>
-                <th>Actions</th>
-            </tr>
-            
-            <?php foreach ($tournaments as $t): ?>
-                <tr>
-                    <td><?php echo $t['id']; ?></td>
-                    <td>
-                        <?php if (!empty($t['banner_image'])): ?>
-                            <img src="../uploads/banners/<?php echo $t['banner_image']; ?>" width="80" height="50">
-                        <?php else: ?>
-                            No Banner
-                        <?php endif; ?>
-                    </td>
-                    <td><?php echo $t['title']; ?></td>
-                    <td><?php echo $t['category']; ?></td>
-                    <td><?php echo $t['status']; ?></td>
-                    <td><?php echo $t['created_by']; ?></td>
-                    
-                    <td>
-                        <a href="detailsTournament.php?id=<?php echo $t['id']; ?>">View</a>
-
-                        <?php if ($userRole == 'Admin' || $currentUser == $t['created_by']) { ?>
-                            | <a href="editTournament.php?id=<?php echo $t['id']; ?>">Edit</a> |
-                            <a href="javascript:void(0)" onclick="confirmDelete(<?php echo $t['id']; ?>)"
-                                style="color: red;">Delete</a>
-                        <?php } ?>
-                    </td>
-                    
-                </tr>
+    <div class="card" style="margin-bottom:24px">
+        <div class="row wrap" style="gap:16px">
+            <div class="searchbar">
+                <input class="input" type="search" id="liveSearch" placeholder="Search by name, sport or location…" value="<?= e($filters['q']) ?>"
+                    data-category="<?= e($filters['category']) ?>" data-status="<?= e($filters['status']) ?>" autocomplete="off">
+            </div>
+            <div class="chips">
+                <?php foreach (['' => 'All status', 'Ongoing' => 'Live', 'Upcoming' => 'Upcoming', 'Completed' => 'Completed'] as $val => $label): ?>
+                    <a href="?status=<?= e($val) ?>" class="chip <?= $filters['status'] === $val ? 'active' : '' ?>" data-filter="status" data-value="<?= e($val) ?>"><?= $label ?></a>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <div class="chips mt-2">
+            <a href="?category=" class="chip <?= $filters['category'] === '' ? 'active' : '' ?>" data-filter="category" data-value="">All sports</a>
+            <?php foreach (CATEGORIES as $c): ?>
+                <a href="?category=<?= urlencode($c) ?>" class="chip <?= $filters['category'] === $c ? 'active' : '' ?>" data-filter="category" data-value="<?= e($c) ?>"><?= icon(category_meta($c)['icon']) ?> <?= e($c) ?></a>
             <?php endforeach; ?>
-        </table>
-    </fieldset>
-</body>
-</html>
+        </div>
+    </div>
 
-<!--
-============================================
-@author ShahriyarH10
-@task Feature 5: Content Management - Tournament List with Search
-@date 2025-12-30
-============================================
--->
+    <div id="results">
+        <p class="muted small" style="margin-bottom:14px"><?= count($tournaments) ?> tournament<?= count($tournaments) === 1 ? '' : 's' ?></p>
+        <?= render_results($tournaments) ?>
+    </div>
+</main>
+<?php include 'partials/footer.php'; ?>

@@ -1,45 +1,15 @@
-
-
-
 <?php
+require_once '../model/tournamentModel.php';
+$user = require_login('../view/');
+require_post('tournamentList.php');
 
-session_start();
-
-require_once('../model/tournamentModel.php');
-
-// Cookie check
-if (!isset($_COOKIE['status'])) {
-    
-    header('location: ../view/login.php');
-    exit();
+$id = (int) ($_POST['id'] ?? 0);
+$t = getTournamentById($id);
+if (!$t || !can_manage_tournament($t)) {
+    flash('error', 'You can only delete tournaments you organise.');
+    redirect('../view/tournamentList.php');
 }
-
-if (isset($_GET['id'])) {
-    $id = $_GET['id'];
-
-    // Get tournament name before deleting (for logging)
-    $tournament = getTournamentById($id);
-    $title = $tournament['title'];
-
-    if (deleteTournament($id)) {
-        // Log activity
-        logActivity("Tournament Deleted: $title (ID: $id) by {$_SESSION['username']}");
-        header('location: ../view/tournamentList.php?success=deleted');
-        
-    } else {
-        
-        header('location: ../view/tournamentList.php?error=db_error');
-    }
-} else {
-    
-    header('location: ../view/tournamentList.php');
-}
-
-/**
- * ============================================
- * @author ShahriyarH10
- * @task Feature 5: Content Management - Delete Tournament with Activity Log
- * @date 2025-12-28
- * ============================================
- */
-?>
+deleteTournament($id);
+logActivity('Tournament deleted: ' . $t['title']);
+flash('success', 'Tournament deleted.');
+redirect('../view/tournamentList.php');

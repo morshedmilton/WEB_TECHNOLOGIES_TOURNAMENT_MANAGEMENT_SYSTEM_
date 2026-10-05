@@ -1,71 +1,117 @@
 <?php
-require_once('db.php');
+require_once __DIR__ . '/helpers.php';
 
-function scheduleMatch($match)
+function matchSelect()
 {
-    $con = getConnection();
-    $sql = "insert into matches (tournament_id, team1_id, team2_id, match_date) 
-            values('{$match['tournament_id']}', '{$match['team1_id']}', '{$match['team2_id']}', '{$match['match_date']}')";
-    $status = mysqli_query($con, $sql);
-    mysqli_close($con);
-    return $status;
+    return 'SELECT m.*, t1.name AS team1_name, t2.name AS team2_name, tw.name AS winner_name, tour.title AS tournament_title, tour.category AS tournament_category
+            FROM matches m
+            JOIN teams t1 ON m.team1_id = t1.id
+            JOIN teams t2 ON m.team2_id = t2.id
+            JOIN tournaments tour ON m.tournament_id = tour.id
+            LEFT JOIN teams tw ON m.winner_id = tw.id';
 }
 
-// List of matches including winner's name [Fixing ID to Name Issue]
-function getMatchesByTournament($tournament_id)
+function scheduleMatch($tournamentId, $team1, $team2, $date)
 {
-    $con = getConnection();
-    $sql = "select m.*, t1.name as team1_name, t2.name as team2_name, tw.name as winner_name 
-            from matches m 
-            join teams t1 on m.team1_id = t1.id 
-            join teams t2 on m.team2_id = t2.id 
-            left join teams tw on m.winner_id = tw.id 
-            where m.tournament_id = '$tournament_id' 
-            order by m.match_date ASC";
-    $result = mysqli_query($con, $sql);
-    $matches = [];
-    while ($row = mysqli_fetch_assoc($result)) {
-        array_push($matches, $row);
+    return db_insert(
+        "INSERT INTO matches (tournament_id, team1_id, team2_id, match_date, status) VALUES (?, ?, ?, ?, 'Scheduled')",
+        [$tournamentId, $team1, $team2, $date]
+    );
+}
+
+function getMatchById($id)
+{
+    return db_one(matchSelect() . ' WHERE m.id = ?', [$id]);
+}
+
+function getMatchesByTournament($tournamentId)
+{
+    return db_all(matchSelect() . ' WHERE m.tournament_id = ? ORDER BY m.match_date ASC', [$tournamentId]);
+}
+
+function updateMatchResult($matchId, $score1, $score2, $status)
+{
+    $match = getMatchById($matchId);
+    $winner = null;
+    if ($status === 'Finished' && $score1 !== $score2) {
+        $winner = $score1 > $score2 ? $match['team1_id'] : $match['team2_id'];
     }
-    mysqli_close($con);
-    return $matches;
+    return db_exec(
+        'UPDATE matches SET team1_score = ?, team2_score = ?, winner_id = ?, status = ? WHERE id = ?',
+        [$score1, $score2, $winner, $status, $matchId]
+    );
 }
 
-function updateMatchResult($match_id, $winner_id, $status)
+function deleteMatch($id)
 {
-    $con = getConnection();
-    $sql = "update matches set winner_id = '$winner_id', status = '$status' where id = '$match_id'";
-    $res = mysqli_query($con, $sql);
-    mysqli_close($con);
-    return $res;
+    return db_exec('DELETE FROM matches WHERE id = ?', [$id]);
 }
 
-// Get matches by team IDs
-function getMatchesByTeamIDs($teamIds)
+function getMatchesByTeamIDs(array $teamIds)
 {
-    $con = getConnection();
-    $sql = "SELECT m.*, t1.name as team1_name, t2.name as team2_name, tour.title as tournament_title, tw.name as winner_name 
-            FROM matches m 
-            JOIN teams t1 ON m.team1_id = t1.id 
-            JOIN teams t2 ON m.team2_id = t2.id 
-            JOIN tournaments tour ON m.tournament_id = tour.id 
-            LEFT JOIN teams tw ON m.winner_id = tw.id 
-            WHERE m.team1_id IN ($teamIds) OR m.team2_id IN ($teamIds) 
-            ORDER BY m.match_date DESC";
-    $result = mysqli_query($con, $sql);
-    $matches = [];
-    while ($row = mysqli_fetch_assoc($result)) {
-        array_push($matches, $row);
+    if (!$teamIds) {
+        return [];
     }
-    mysqli_close($con);
-    return $matches;
+    $in = implode(',', array_fill(0, count($teamIds), '?'));
+    $ids = array_values($teamIds);
+    return db_all(
+        matchSelect() . " WHERE m.team1_id IN ($in) OR m.team2_id IN ($in) ORDER BY m.match_date DESC",
+        array_merge($ids, $ids)
+    );
+}
+
+function getUpcomingMatches($limit = 5)
+{
+    return db_all(matchSelect() . " WHERE m.status <> 'Finished' ORDER BY m.match_date ASC LIMIT " . (int) $limit);
+}
+
+function getRecentResults($limit = 5)
+{
+    return db_all(matchSelect() . " WHERE m.status = 'Finished' ORDER BY m.match_date DESC LIMIT " . (int) $limit);
 }
 
 /**
- * ============================================
- * @author MdTanjimAhamad
- * @task Feature 6: Match Management - Schedule and Update Results
- * @date 2026-01-06
- * ============================================
+ * League table computed from finished matches: 3 pts win, 1 pt draw.
+ * $teams is the list of registered teams so teams with no games still appear.
  */
-?>
+function computeStandings(array $teams, array $matches)
+{
+    $table = [];
+    foreach ($teams as $team) {
+        $table[$team['id']] = ['id' => $team['id'], 'name' => $team['name'], 'p' => 0, 'w' => 0, 'd' => 0, 'l' => 0, 'for' => 0, 'against' => 0, 'pts' => 0];
+    }
+    foreach ($matches as $m) {
+        if ($m['status'] !== 'Finished' || !isset($table[$m['team1_id']]) || !isset($table[$m['team2_id']])) {
+            continue;
+        }
+        $a = &$table[$m['team1_id']];
+        $b = &$table[$m['team2_id']];
+        $a['p']++;
+        $b['p']++;
+        $a['for'] += (int) $m['team1_score'];
+        $a['against'] += (int) $m['team2_score'];
+        $b['for'] += (int) $m['team2_score'];
+        $b['against'] += (int) $m['team1_score'];
+        if ($m['team1_score'] > $m['team2_score']) {
+            $a['w']++; $a['pts'] += 3; $b['l']++;
+        } elseif ($m['team1_score'] < $m['team2_score']) {
+            $b['w']++; $b['pts'] += 3; $a['l']++;
+        } else {
+            $a['d']++; $b['d']++; $a['pts']++; $b['pts']++;
+        }
+        unset($a, $b);
+    }
+    $rows = array_values($table);
+    usort($rows, function ($x, $y) {
+        if ($x['pts'] !== $y['pts']) {
+            return $y['pts'] - $x['pts'];
+        }
+        $dx = $x['for'] - $x['against'];
+        $dy = $y['for'] - $y['against'];
+        if ($dx !== $dy) {
+            return $dy - $dx;
+        }
+        return strcmp($x['name'], $y['name']);
+    });
+    return $rows;
+}

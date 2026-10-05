@@ -1,59 +1,36 @@
 <?php
-session_start();
-if (!isset($_COOKIE['status'])) {
-    header('location: login.php');
-    exit();
-}
+require_once '../model/teamModel.php';
+$user = require_role(['Player', 'Organizer', 'Admin']);
+$old = $_SESSION['old'] ?? [];
+unset($_SESSION['old']);
+$active = 'teams';
+$pageTitle = 'Create team';
+include 'partials/header.php';
 ?>
-<!DOCTYPE html>
-<html>
-
-<head>
-    <title>Form Team</title>
-    <link rel="stylesheet" href="../asset/css/style.css">
-</head>
-
-<body>
-    <form method="post" action="../controller/teamController.php">
-        <fieldset style="width: 500px; margin: 50px auto;">
-            <legend>Create a New Team</legend>
-
-            <div style="text-align: center; margin-bottom: 10px;">
-                <a href="home.php">Dashboard</a> | <a href="teamList.php">Team List</a>
+<main class="container">
+    <div class="crumbs"><a href="teamList.php">Teams</a> / New</div>
+    <div class="page-head"><div><h1>Create a team</h1><p>You'll be added as captain automatically.</p></div></div>
+    <div class="card" style="max-width:640px">
+        <form method="post" action="../controller/teamController.php">
+            <?= csrf_field() ?>
+            <div class="field">
+                <label for="name">Team name</label>
+                <input class="input" type="text" name="name" id="name" maxlength="100" value="<?= e($old['name'] ?? '') ?>" placeholder="e.g. Dhaka Dynamos" required>
             </div>
-
-            <div style="text-align: center; margin-bottom: 15px;">
-                <?php
-                if (isset($_GET['error'])) {
-                    if ($_GET['error'] == 'null') {
-                        echo "<span style='color: red; font-weight: bold;'>Team name cannot be empty!</span>";
-                    } elseif ($_GET['error'] == 'invalid_members') {
-                        echo "<span style='color: red; font-weight: bold;'>Error: One or more members are not registered as 'Player'!</span>";
-                    } elseif ($_GET['error'] == 'db_error') {
-                        echo "<span style='color: red; font-weight: bold;'>Database error! Please try again.</span>";
-                    }
-                }
-                ?>
+            <div class="field">
+                <label for="sport">Sport</label>
+                <select class="input" name="sport" id="sport">
+                    <?php foreach (CATEGORIES as $c): ?><option value="<?= e($c) ?>" <?= ($old['sport'] ?? '') === $c ? 'selected' : '' ?>><?= e($c) ?></option><?php endforeach; ?>
+                </select>
+                <div class="hint">Teams can only enter tournaments of their own sport.</div>
             </div>
-
-            Team Name:
-            <input type="text" name="name" placeholder="Enter team name" required><br>
-
-            Members (Usernames, comma separated):
-            <textarea name="members" rows="3" style="width: 95%;" placeholder="e.g. user1, user2, user3"></textarea>
-            <small style="color: gray;">Note: All members must be registered in the system.</small><br><br>
-
-            <input type="submit" name="submit" value="Create Team">
-        </fieldset>
-    </form>
-</body>
-
-</html>
-
-<!--
-============================================
-@author MdTanjimAhamad
-@task Feature 6: Team Management - Create Team Form
-@date 2026-01-08
-============================================
--->
+            <div class="field">
+                <label for="members">Teammates <span class="muted">(usernames, comma separated)</span></label>
+                <textarea class="input" name="members" id="members" rows="3" placeholder="tanvir.hossain, sadia.islam, imran.khan"><?= e($old['members'] ?? '') ?></textarea>
+                <div class="hint">Every teammate must already be a registered player.</div>
+            </div>
+            <button class="btn btn-primary btn-lg" type="submit" name="submit" value="1">Create team</button>
+        </form>
+    </div>
+</main>
+<?php include 'partials/footer.php'; ?>

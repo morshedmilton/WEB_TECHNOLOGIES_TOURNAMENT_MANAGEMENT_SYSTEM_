@@ -1,75 +1,38 @@
 <?php
-session_start();
-require_once('../model/teamModel.php');
-require_once('../model/tournamentModel.php');
-if (!isset($_COOKIE['status'])) {
-    header('location: login.php');
-    exit();
+require_once '../model/tournamentModel.php';
+require_once '../model/teamModel.php';
+$user = require_login();
+$id = (int) ($_GET['id'] ?? 0);
+$t = getTournamentById($id);
+if (!$t || !can_manage_tournament($t)) {
+    flash('error', 'Only the organiser can schedule matches.');
+    redirect('tournamentList.php');
 }
-
-if (isset($_GET['id'])) {
-    $t_id = $_GET['id'];
-    $tournament = getTournamentById($t_id);
-    $teams = getRegisteredTeams($t_id);
-}
+$teams = getRegisteredTeams($id);
+$active = 'tournaments';
+$pageTitle = 'Schedule match';
+include 'partials/header.php';
 ?>
-<!DOCTYPE html>
-<html>
-
-<head>
-    <title>Schedule Match</title>
-    <link rel="stylesheet" href="../asset/css/style.css">
-</head>
-
-<body>
-    <fieldset style="width: 500px; margin: 30px auto;">
-        <legend>Schedule New Match</legend>
-        <div style="text-align: center;"><a href="detailsTournament.php?id=<?php echo $t_id; ?>">Back to Tournament</a>
-        </div>
-
-        <div style="text-align: center; margin-top: 15px;">
-            <?php
-            if (isset($_GET['error'])) {
-                if ($_GET['error'] == 'same_team')
-                    echo "<span style='color: red;'>Error: Team 1 and Team 2 cannot be the same!</span>";
-                if ($_GET['error'] == 'db_error')
-                    echo "<span style='color: red;'>Database error! Please try again.</span>";
-            }
-            ?>
-        </div>
-
-        <form method="post" action="../controller/matchController.php">
-            <input type="hidden" name="tournament_id" value="<?php echo $t_id; ?>">
-            <p>Tournament: <strong><?php echo $tournament['title']; ?></strong></p>
-
-            Team 1:
-            <select name="team1_id" style="width: 95%;">
-                <?php foreach ($teams as $team): ?>
-                    <option value="<?php echo $team['id']; ?>"><?php echo $team['name']; ?></option>
-                <?php endforeach; ?>
-            </select><br>
-
-            Team 2:
-            <select name="team2_id" style="width: 95%;">
-                <?php foreach ($teams as $team): ?>
-                    <option value="<?php echo $team['id']; ?>"><?php echo $team['name']; ?></option>
-                <?php endforeach; ?>
-            </select><br>
-
-            Match Date:
-            <input type="datetime-local" name="match_date" style="width: 95%;" required><br><br>
-
-            <input type="submit" name="schedule" value="Confirm Schedule">
-        </form>
-    </fieldset>
-</body>
-
-</html>
-
-<!--
-============================================
-@author MdTanjimAhamad
-@task Feature 6: Match Management - Schedule Match Form
-@date 2026-01-10
-============================================
--->
+<main class="container">
+    <div class="crumbs"><a href="tournamentList.php">Tournaments</a> / <a href="detailsTournament.php?id=<?= $id ?>#matches"><?= e($t['title']) ?></a> / Schedule</div>
+    <div class="page-head"><div><h1>Schedule a match</h1><p><?= e($t['title']) ?></p></div></div>
+    <div class="card" style="max-width:620px">
+        <?php if (count($teams) < 2): ?>
+            <?= empty_state('users', 'Not enough teams', 'At least two teams must be registered before you can schedule a match.') ?>
+        <?php else: ?>
+            <form method="post" action="../controller/matchController.php">
+                <?= csrf_field() ?><input type="hidden" name="tournament_id" value="<?= $id ?>">
+                <div class="form-grid">
+                    <div class="field"><label for="team1_id">Team 1</label>
+                        <select class="input" name="team1_id" id="team1_id"><?php foreach ($teams as $tm): ?><option value="<?= (int) $tm['id'] ?>"><?= e($tm['name']) ?></option><?php endforeach; ?></select></div>
+                    <div class="field"><label for="team2_id">Team 2</label>
+                        <select class="input" name="team2_id" id="team2_id"><?php foreach ($teams as $i => $tm): ?><option value="<?= (int) $tm['id'] ?>" <?= $i === 1 ? 'selected' : '' ?>><?= e($tm['name']) ?></option><?php endforeach; ?></select></div>
+                </div>
+                <div class="field"><label for="match_date">Date &amp; time</label>
+                    <input class="input" type="datetime-local" name="match_date" id="match_date" required></div>
+                <button class="btn btn-primary btn-lg" type="submit" name="schedule" value="1">Schedule match</button>
+            </form>
+        <?php endif; ?>
+    </div>
+</main>
+<?php include 'partials/footer.php'; ?>

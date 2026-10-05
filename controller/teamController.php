@@ -1,56 +1,70 @@
 <?php
-session_start();
-require_once('../model/teamModel.php');
-require_once('../model/tournamentModel.php');
+require_once '../model/teamModel.php';
+require_once '../model/tournamentModel.php';
+$user = require_login('../view/');
+require_post('teamList.php');
 
-// 1. Team creation request with player validation
 if (isset($_POST['submit'])) {
-    $name = trim($_POST['name']);
-    $members_raw = trim($_POST['members']);
-    $members_array = explode(',', $members_raw); // Separate by comma
+    $name = trim($_POST['name'] ?? '');
+    $sport = in_array($_POST['sport'] ?? '', CATEGORIES, true) ? $_POST['sport'] : CATEGORIES[0];
+    $raw = trim($_POST['members'] ?? '');
+    $_SESSION['old'] = ['name' => $name, 'sport' => $sport, 'members' => $raw];
 
-    $valid_team = true;
-    foreach ($members_array as $m) {
-        $m = trim($m);
-        if (!isPlayerRegistered($m)) {
-            $valid_team = false;
-            break;
-        }
+    $usernames = array_values(array_filter(array_map('trim', explode(',', $raw)), 'strlen'));
+    list($ids, $unknown) = resolvePlayers($usernames);
+
+    $error = null;
+    if ($name === '') {
+        $error = 'Team name cannot be empty.';
+    } elseif (teamNameExists($name)) {
+        $error = 'A team with that name already exists.';
+    } elseif ($unknown) {
+        $error = 'Not registered players: ' . implode(', ', $unknown) . '.';
+    }
+    if ($error) {
+        flash('error', $error);
+        redirect('../view/createTeam.php');
     }
 
-    if ($name == "") {
-        header('location: ../view/createTeam.php?error=null');
-    } elseif (!$valid_team) {
-        // If any member is not registered as a player
-        header('location: ../view/createTeam.php?error=invalid_members');
-    } else {
-        $team = ['name' => $name, 'members' => $members_raw, 'created_by' => $_SESSION['username']];
-        if (createTeam($team)) {
-            logActivity("New team formed: $name");
-            header('location: ../view/teamList.php?success=created');
-        } else {
-            header('location: ../view/createTeam.php?error=db_error');
-        }
-    }
+    unset($_SESSION['old']);
+    createTeam($name, $sport, $user['id'], $ids);
+    logActivity("New team formed: $name");
+    flash('success', "Team \"$name\" created.");
+    redirect('../view/teamList.php');
 }
 
-// 2. Request to join tournament (as before)
+$tid = (int) ($_POST['tournament_id'] ?? 0);
+$teamId = (int) ($_POST['team_id'] ?? 0);
+$back = '../view/detailsTournament.php?id=' . $tid;
+$t = getTournamentById($tid);
+$team = getTeamById($teamId);
+if (!$t || !$team) {
+    redirect('../view/tournamentList.php');
+}
+if ((int) $team['created_by'] !== (int) $user['id'] && $user['role'] !== 'Admin') {
+    flash('error', 'Only the team captain can do that.');
+    redirect($back);
+}
+
 if (isset($_POST['join'])) {
-    $t_id = $_POST['tournament_id'];
-    $team_id = $_POST['team_id'];
-
-    if (joinTournament($t_id, $team_id)) {
-        header("location: ../view/detailsTournament.php?id=$t_id&success=joined");
+    if ($t['status'] === 'Completed') {
+        flash('error', 'Registration is closed for completed tournaments.');
+    } elseif ($team['sport'] !== $t['category']) {
+        flash('error', "This is a {$t['category']} tournament; {$team['name']} plays {$team['sport']}.");
+    } elseif (isTeamRegistered($tid, $teamId)) {
+        flash('error', 'That team is already registered.');
+    } elseif ((int) $t['team_count'] >= (int) $t['max_teams']) {
+        flash('error', 'This tournament is full.');
     } else {
-        header("location: ../view/detailsTournament.php?id=$t_id&error=db_error");
+        joinTournament($tid, $teamId);
+        logActivity("Team {$team['name']} joined {$t['title']}");
+        flash('success', "{$team['name']} is in! Good luck.");
     }
 }
 
-/**
- * ============================================
- * @author MdTanjimAhamad
- * @task Feature 6: Team Controller - Create Team and Join Tournament
- * @date 2026-01-08
- * ============================================
- */
-?>
+if (isset($_POST['leave'])) {
+    leaveTournament($tid, $teamId);
+    logActivity("Team {$team['name']} withdrew from {$t['title']}");
+    flash('success', "{$team['name']} withdrew from the tournament.");
+}
+redirect($back);

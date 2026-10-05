@@ -1,68 +1,66 @@
-
-
 <?php
+require_once '../model/tournamentModel.php';
+$user = require_role(['Admin', 'Organizer'], '../view/');
+require_post('tournamentList.php');
 
-session_start();
-
-require_once('../model/tournamentModel.php');
-
-if (isset($_POST['submit'])) {
-    
-    $title = trim($_POST['title']);
-    $category = $_POST['category'];
-    $description = trim($_POST['content']);
-    $username = $_SESSION['username'];
-
-    // 1. Banner upload (Item 20)
-    $banner = $_FILES['attachment']; // Banner input
-    $bannerName = "";
-    
-    if (!empty($banner['name'])) {
-        $bannerExt = strtolower(pathinfo($banner['name'], PATHINFO_EXTENSION));
-        $bannerName = "banner_" . time() . "." . $bannerExt;
-        move_uploaded_file($banner['tmp_name'], '../uploads/banners/' . $bannerName);
-    }
-
-    $tournament = [
-        'title' => $title,
-        'category' => $category,
-        'description' => $description,
-        'banner_image' => $bannerName,
-        'created_by' => $username
+function read_tournament_input()
+{
+    return [
+        'title' => trim($_POST['title'] ?? ''),
+        'category' => in_array($_POST['category'] ?? '', CATEGORIES, true) ? $_POST['category'] : CATEGORIES[0],
+        'description' => trim($_POST['description'] ?? ''),
+        'status' => in_array($_POST['status'] ?? '', TOURNAMENT_STATUSES, true) ? $_POST['status'] : 'Upcoming',
+        'location' => trim($_POST['location'] ?? ''),
+        'start_date' => preg_match('/^\d{4}-\d{2}-\d{2}$/', $_POST['start_date'] ?? '') ? $_POST['start_date'] : null,
+        'prize_pool' => trim($_POST['prize_pool'] ?? ''),
+        'max_teams' => max(2, min(64, (int) ($_POST['max_teams'] ?? 8))),
     ];
-
-    $t_id = createTournament($tournament);
-
-    if ($t_id) {
-        // 2. Additional document upload (Item 21 - Rules/PDF)
-        if (!empty($_FILES['rulebook']['name'])) {
-            
-            $doc = $_FILES['rulebook'];
-            $docExt = strtolower(pathinfo($doc['name'], PATHINFO_EXTENSION));
-            $docName = "rule_" . time() . "." . $docExt;
-            $docPath = '../uploads/docs/' . $docName;
-
-            if (move_uploaded_file($doc['tmp_name'], $docPath)) {
-                
-                addAttachment($t_id, $doc['name'], $docName, $docExt);
-            }
-        }
-        
-        logActivity("Tournament created with attachments: $title");
-        
-        header('location: ../view/tournamentList.php?success=created');
-        
-    } else {
-        
-        header('location: ../view/createTournament.php?error=db_error');
-    }
 }
 
-/**
- * ============================================
- * @author ShahriyarH10
- * @task Feature 5: Content Management - Create Tournament with File Upload
- * @date 2025-12-27
- * ============================================
- */
-?>
+if (isset($_POST['submit'])) {
+    $t = read_tournament_input();
+    if ($t['title'] === '' || $t['description'] === '') {
+        flash('error', 'Title and description are required.');
+        redirect('../view/createTournament.php');
+    }
+
+    $err = null;
+    $banner = save_upload($_FILES['banner'] ?? [], __DIR__ . '/../uploads/banners', 'image', 'banner', $err);
+    if ($err) {
+        flash('error', $err);
+        redirect('../view/createTournament.php');
+    }
+    $t['banner_image'] = $banner;
+    $t['created_by'] = $user['id'];
+    $id = createTournament($t);
+
+    $docErr = null;
+    $doc = save_upload($_FILES['rulebook'] ?? [], __DIR__ . '/../uploads/docs', 'document', 'rule', $docErr);
+    if ($doc) {
+        addAttachment($id, $_FILES['rulebook']['name'], $doc, strtolower(pathinfo($doc, PATHINFO_EXTENSION)));
+    }
+
+    logActivity('Tournament created: ' . $t['title']);
+    flash('success', 'Tournament created.' . ($docErr ? ' (Rulebook was skipped: ' . $docErr . ')' : ''));
+    redirect('../view/detailsTournament.php?id=' . $id);
+}
+
+if (isset($_POST['update'])) {
+    $id = (int) ($_POST['id'] ?? 0);
+    $existing = getTournamentById($id);
+    if (!$existing || !can_manage_tournament($existing)) {
+        flash('error', 'You can only edit tournaments you organise.');
+        redirect('../view/tournamentList.php');
+    }
+    $t = read_tournament_input();
+    if ($t['title'] === '' || $t['description'] === '') {
+        flash('error', 'Title and description are required.');
+        redirect('../view/editTournament.php?id=' . $id);
+    }
+    updateTournament($id, $t);
+    logActivity('Tournament updated: ' . $t['title']);
+    flash('success', 'Changes saved.');
+    redirect('../view/detailsTournament.php?id=' . $id);
+}
+
+redirect('../view/tournamentList.php');
