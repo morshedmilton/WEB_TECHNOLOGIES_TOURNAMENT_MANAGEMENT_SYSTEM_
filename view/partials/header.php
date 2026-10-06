@@ -70,6 +70,7 @@ if ($user) {
                     <a href="landing.php#featured">Tournaments</a>
                     <a href="faq.php">FAQ</a>
                     <a href="contact.php">Contact</a>
+                    <a href="login.php" class="nav-signin">Sign in</a>
                 </nav>
             <?php endif; ?>
             <div class="nav-right">
